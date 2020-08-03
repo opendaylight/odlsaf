@@ -1,0 +1,68 @@
+---
+project: 'odlsaf'
+project_creation_date: '2020-20-04'
+project_category: ''
+lifecycle_state: 'Incubation'
+project_lead: &odl_odlsaf_ptl
+    name: 'Prem Sankar Gopannan'
+    email: 'pgopannan@luminanetworks.com'
+    company: 'Lumina Networks'
+    id: 'premsankarg'
+    timezone: 'Unknown/Unknown'
+primary_contact: *odl_odlsaf_ptl
+issue_tracking:
+    type: 'jira'
+    url: 'https://jira.opendaylight.org/projects/'
+    key: 'saf'
+mailing_list:
+    type: 'groups.io'
+    url: 'technical-discuss@lists.opendaylight.org'
+    tag: '[]'
+realtime_discussion:
+    type: 'irc'
+    server: 'freenode.net'
+    channel: '#opendaylight'
+meetings:
+    - type: 'gotomeeting+irc'
+      agenda: 'https://wiki.opendaylight.org/display/'
+      url: ''
+      server: 'freenode.net'
+      channel: '#opendaylight'
+      repeats: ''
+      time: ''
+repositories:
+    - odlsaf
+committers:
+    - <<: *odl_odlsaf_ptl
+    - name: 'Richard Kosegi'
+      email: 'richard.kosegi@gmail.com'
+      company: ''
+      id: 'rkosegi'
+      timezone: 'Unknown/Unknown'
+    - name: 'Kanagasundaram  K'
+      email: 'kksundaram73@gmail.com'
+      company: ''
+      id: 'kksundaram73'
+      timezone: 'Unknown/Unknown'
+    - name: 'Pravin Kumar Damodaran'
+      email: 'nivarp1995@gmail.com'
+      company: ''
+      id: 'rdpravin'
+      timezone: 'Unknown/Unknown'
+    - name: 'Mahesh Lokhande'
+      email: 'lokmahesh@gmail.com'
+      company: ''
+      id: 'lokmahesh'
+      timezone: 'Unknown/Unknown'
+    - name: 'Jeff Hartley'
+      email: 'intensifysecurity@gmail.com'
+      company: ''
+      id: 'malloc_failed'
+      timezone: 'Unknown/Unknown'
+tsc:
+    # yamllint disable rule:line-length
+    approval: 'https://wiki.opendaylight.org/display/ODL/ODL+SAF+%28OpenDaylight+SAA%29+Project+Approval'
+    changes:
+        - type: ''
+          name: ''
+          link: ''
