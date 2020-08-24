@@ -1,0 +1,45 @@
+{
+  "workflow-name": "PUT",
+  "workflow-input": {
+    "array-element": [
+      {
+        "yang-path": "config/jsonrpc:config/configured-endpoints/junos/yang-ext:mount/openconfig-interfaces:interfaces/interface/{ge-1/2/22}",
+        "prechecks": {
+          "array-element": "pathValidation"
+        },
+        "postchecks": {
+          "array-element": "VerifyPut"
+        },
+        "config-data": {
+          "interface": {
+            "array-element": {
+              "name": "ge-1/2/22",
+              "config": {
+                "description": "Interface-1/2/22 multiple put modified"
+              }
+            }
+          }
+        }
+      },
+      {
+        "yang-path": "config/jsonrpc:config/configured-endpoints/nxos/yang-ext:mount/openconfig-interfaces:interfaces/interface/{Ethernet1/38}",
+        "prechecks": {
+          "array-element": "path_validation"
+        },
+        "postchecks": {
+          "array-element": "VerifyPut"
+        },
+        "config-data": {
+          "interface": {
+            "array-element": {
+              "name": "Ethernet1/38",
+              "config": {
+                "description": "Ethernet1/38 modified---- multiple put"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

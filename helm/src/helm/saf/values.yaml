@@ -1,0 +1,39 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+appVersion: 1.0
+opentracing: disabled
+ports:
+  governance: 24320
+  odl:
+    restconf: 8181
+    ssh: 8101
+    whoami: 24330
+  devicedb: 24318
+  wfe: 24325
+  plastic: 12000
+  jaeger:
+    query: 16686
+    agent: 6831
+    agentConfigs: 5778
+jaegerHost: jaeger-agent
+odluserUID: 999
+odluserGID: 997
+odlMem: 2
+persistence:
+  storageClass: ""
+imagePullPolicy: IfNotPresent
+imageRegistry: odl
+images:
+  governance: saf-governance:${project.version}
+  devicedb: saf-devicedb:${project.version}
+  odl: saf-odl:${project.version}
+  wfe: saf-wfe:${project.version}
+  plastic: saf-plastic:${project.version}
+  setup: saf-setup:${project.version}
+  jaeger: jaegertracing/all-in-one:1.17
+  busybox: busybox:1.31
+

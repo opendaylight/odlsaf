@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0yx2vpl" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.3.5">
+  <bpmn:process id="Http" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>SequenceFlow_0t00tri</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0t00tri" sourceRef="StartEvent_1" targetRef="HttpDelegate" />
+    <bpmn:serviceTask id="HttpDelegate" name="HttpDelegate" camunda:delegateExpression="${httpDelegate}">
+      <bpmn:incoming>SequenceFlow_0t00tri</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1j9kbly</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1j9kbly" sourceRef="HttpDelegate" targetRef="EndEvent_1ha4cfp" />
+    <bpmn:endEvent id="EndEvent_1ha4cfp">
+      <bpmn:incoming>SequenceFlow_1j9kbly</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Http">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="160" y="105" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0t00tri_di" bpmnElement="SequenceFlow_0t00tri">
+        <di:waypoint x="196" y="123" />
+        <di:waypoint x="251" y="123" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_0q1n8rn_di" bpmnElement="HttpDelegate">
+        <dc:Bounds x="251" y="83" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1j9kbly_di" bpmnElement="SequenceFlow_1j9kbly">
+        <di:waypoint x="351" y="123" />
+        <di:waypoint x="408" y="123" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_1ha4cfp_di" bpmnElement="EndEvent_1ha4cfp">
+        <dc:Bounds x="408" y="105" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

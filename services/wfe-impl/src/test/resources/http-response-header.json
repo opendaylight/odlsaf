@@ -1,0 +1,24 @@
+{
+    "null": [
+        "HTTP/1.1 200 OK"
+    ],
+    "Server": [
+        "Jetty(9.3.24.v20180605)"
+    ],
+    "Set-Cookie": [
+        "rememberMe=deleteMe; Path=/; Max-Age=0; Expires=Mon, 28-Oct-2019 09:15:04 GMT",
+        "JSESSIONID=v7h859elwz1ru2kle92l1l7x;Path=/"
+    ],
+    "Expires": [
+        "Thu, 01 Jan 1970 00:00:00 GMT"
+    ],
+    "Content-Length": [
+        "502"
+    ],
+    "Date": [
+        "Tue, 29 Oct 2019 09:15:04 GMT"
+    ],
+    "Content-Type": [
+        "application/json"
+    ]
+}

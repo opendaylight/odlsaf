@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.saf</groupId>
+        <artifactId>packaging-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../packaging</relativePath>
+    </parent>
+    <artifactId>docker-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>SAF :: Parent :: Docker</name>
+    <properties>
+        <!-- don't skip commit id, it is required for image metadata -->
+        <maven.gitcommitid.skip>false</maven.gitcommitid.skip>
+        <docker.image.name>${project.artifactId}</docker.image.name>
+        <docker.image.version>${project.version}</docker.image.version>
+        <docker.vendor>odl</docker.vendor>
+        <docker.skip>true</docker.skip>
+	<docker.skip.build>true</docker.skip.build>
+        <docker.image.from>${docker.vendor}/saf-java-base:${project.version}</docker.image.from>
+        <docker.image.description></docker.image.description>
+        <docker.build.steps><![CDATA[
+COPY *.zip /tmp/
+
+RUN cd /tmp; unzip -qo -d ${pkg.root.dir} '*.zip'; chmod o+x ${pkg.root.dir}/bin/* || true
+
+]]></docker.build.steps>
+    </properties>
+    <build>
+        <resources>
+            <resource>
+                <directory>${project.build.directory}/unfiltered</directory>
+                <includes>
+                    <include>Dockerfile</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-zip</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <includeTypes>zip</includeTypes>
+                            <outputDirectory>${project.build.directory}/docker-build</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-docker-build</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.build.directory}/unfiltered" />
+                                <mkdir dir="${project.build.directory}/docker-build" />
+                                <echo file="${project.build.directory}/unfiltered/Dockerfile">
+<![CDATA[
+FROM ${docker.image.from}
+
+${docker.build.steps}
+
+LABEL org.label-schema.vcs-ref="${git.commit.id.describe-short}@${git.commit.time}"
+LABEL org.label-schema.build-date="${git.build.time}"
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.description="${docker.image.description}"
+LABEL org.label-schema.vendor="OpenDayLight"
+LABEL org.label-schema.version="${docker.image.version}"
+
+CMD "/bin/bash"
+]]>
+                                </echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.33.0</version>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <build>
+                                        <contextDir>${project.build.directory}/docker-build</contextDir>
+                                        <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
+                                    </build>
+                                    <name>${docker.vendor}/${docker.image.name}:${docker.image.version}</name>
+                                </image>
+                            </images>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

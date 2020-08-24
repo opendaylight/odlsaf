@@ -1,0 +1,133 @@
+#!/bin/bash
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+this_name=$(basename $0)
+prog_name="devicedb"
+
+root_dir=/app
+executable=$(find ${root_dir}/lib/java/${prog_name}*.jar)
+
+operations=zmq://0.0.0.0:24318
+advertise_operations=zmq://devicedb:24318
+lsc=zmq://lsc:24330
+governance=zmq://governance:24320
+napalm=zmq://napalm:24322
+cliengine=zmq://cliengine:24319
+
+usage() {
+    echo "SAF Device database"
+    echo "Usage ${this_name} <required arguments> <optional arguments ...>"
+    echo "Required arguments:"
+    echo "--operations <protocol://local-ip:port>          Endpoint to bind to for local datastore"
+    echo "                                                 operations and RPCs"
+    echo "--advertise-operations <advertised address>      Endpoint to advertise to other services"
+    echo "                                                 to use local datastore operations and RPCs"
+    echo "--odl <protocol://lsc-ip:port>                   ODL remote control endpoint"
+    echo "--governance <protocol://governance-ip:port>     Governance endpoint"
+    echo "--napalm <protocol://napalm:port>                Napalm service endpoint"
+    echo "--cliengine <protocol://cliengine:port>          CLIEngine service endpoint"
+}
+
+while (( "$#" )); do
+    case "${1}" in
+        --operations)
+            if [ "${2}" = "" ]; then
+                echo "Missing endpoint to bind datastore/RPCs to"
+                usage
+                exit 1
+            fi
+            operations="${2}"
+            shift 2
+            ;;
+        --advertise-operations)
+            if [ "${2}" = "" ]; then
+                echo "Missing advertise operations address"
+                usage
+                exit 1
+            fi
+            advertise_operations="${2}"
+            shift 2
+            ;;
+        --odl)
+            if [ "${2}" = "" ]; then
+                echo "Missing ODL address"
+                usage
+                exit 1
+            fi
+            lsc="${2}"
+            shift 2
+            ;;
+        --governance)
+            if [ "${2}" = "" ]; then
+                echo "Missing governance endpoint"
+                usage
+                exit 1
+            fi
+            governance="${2}"
+            shift 2
+            ;;
+        --napalm)
+            if [ "${2}" = "" ]; then
+                echo "Missing napalm endpoint"
+                usage
+                exit 1
+            fi
+            napalm="${2}"
+            shift 2
+            ;;
+        --cliengine)
+            if [ "${2}" = "" ]; then
+                echo "Missing cliengine endpoint"
+                usage
+                exit 1
+            fi
+            cliengine="${2}"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument : ${1}"
+            shift
+            ;;
+   esac
+done
+
+required_args=("$operations" "$advertise_operations" "$odl" "$governance" "$napalm" "$cliengine")
+for arg in  "${required_args[@]}"; do
+    if [ "${arg// /}" == "" ]; then
+        echo "One or more required arguments are missing"
+        usage
+        exit 1
+    fi
+done
+
+source /etc/profile
+
+JAVA_OPTS=$JAVA_OPTS" $SAF_JAVA_OPTS"
+
+if [ ! -z "$SAF_LOG_LEVEL" ]; then
+    JAVA_OPTS=$JAVA_OPTS" -Dlogging.level.org.opendaylight.saf=$SAF_LOG_LEVEL"
+fi
+
+if [ ! -z "$JSONRPC_LOG_LEVEL" ]; then
+    JAVA_OPTS=$JAVA_OPTS" -Dlogging.level.org.opendaylight.jsonrpc=$JSONRPC_LOG_LEVEL"
+fi
+
+cd ${root_dir}
+
+java $JAVA_OPTS \
+    -Dlogging.config="file://${root_dir}/config/logback.xml"                \
+    -jar ${executable}                                                      \
+    --operations="${operations}"                                            \
+    --advertise-operations="${advertise_operations}"                        \
+    --odl="${odl}"                                                          \
+    --governance="${governance}"                                            \
+    --napalm="${napalm}"                                                    \
+    --cliengine="${cliengine}"
