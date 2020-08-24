@@ -1,0 +1,75 @@
+module saf-unified-inventory {
+    yang-version 1;
+    namespace "https://opendaylight.org/saf/uinified-inventory";
+    prefix "ui";
+
+    import network-topology { prefix "nt"; revision-date 2013-10-21; }
+    import saf-device-database { prefix db; revision-date 2016-06-08; }
+
+    revision 2019-04-04 {
+        description "Initial revision";
+    }
+
+    description
+        "Unified inventory model for ODL and SAF topologies";
+
+    augment "/nt:network-topology/nt:topology/nt:topology-types" {
+        container saf-topology {
+            presence "The presence of the container node indicates a network of SAF
+                        devices";
+        }
+    }
+
+    typedef topology-source {
+        description "The source of node topology.";
+        type enumeration {
+            enum ALL ;
+            enum ODL;
+            enum SAF;
+        }
+    }
+
+    grouping unified-topology {
+        container unified-network-topology {
+            list unified-topology {
+                key "topology-id";
+
+                leaf topology-id {
+                    type string;
+                    description "Id of the topology. NETCONF- topology-netconf, Openflow- flow:1,
+                                        SAF- saf-topology, etc";
+                }
+
+                list nodes {
+                    key "node-id";
+                    leaf node-id {
+                        type string;
+                        description "Unique id of the node/device";
+                    }
+
+                    leaf node-reference {
+                        type instance-identifier;
+                        description "A type for an absolute reference to a node instance. (This type
+                                                should not be used for relative references. In such a case, a
+                                                relative path should be used instead.)";
+                    }
+
+                    uses db:device-attributes {
+                        when "../node-id = saf-topology";
+                    }
+                }
+            }
+        }
+    }
+
+    rpc get-topology {
+        input {
+            leaf topology-source {
+                type topology-source;
+            }
+        }
+        output {
+            uses unified-topology;
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+  "workflow-name": "TRANSLATE",
+  "workflow-input": {
+    "in-name": "in-name",
+    "in-type": "in-type",
+    "in-version": "in-version",
+    "out-name": "out-name",
+    "out-type": "out-type",
+    "out-version": "out-version",
+    "data": "test"
+  }
+}

@@ -1,0 +1,68 @@
+#!/bin/bash 
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+this_name=$(basename $0)
+prog_name="governance"
+root_dir=/app
+executable=$(find ${root_dir}/lib/java/${prog_name}*.jar)
+endpoint=
+yang_root=${root_dir}/share/yang
+
+usage() {
+    echo "SAF governance service"
+    echo "Usage ${this_name} -b <endpoint> <optional arguments ...>"
+    echo "Required arguments:"
+    echo "  -b|--endpoint <protocol://bind-ip:port>       RPC endpoint to bind to"
+    echo "Optional arguments:"
+    echo "  -y|--yang-root /path/to/yang/files            Path to directory containing YANG files"
+}
+
+# we need 2 arguments at least
+if [ $# -lt 2 ]; then
+    >&2 usage
+    exit 1
+fi
+
+while (( "$#" )); do
+    case "${1}" in
+        -b|--endpoint)
+            if [ "${2}" = "" ]; then
+                echo "Missing RPC endpoint"
+                usage
+                exit 1
+            fi
+            endpoint="${2}"
+            shift 2
+            ;;
+        -y|--yang-root)
+            if [ "${2}" = "" ]; then
+                echo "Missing YANG directory path"
+                usage
+                exit 1
+            fi
+            yang_root="${2}"
+            shift 2
+            ;;
+        *)
+            echo "Unknown argument : ${1}"
+            shift
+            ;;
+   esac
+done
+
+
+source /etc/profile
+
+JAVA_OPTS=$JAVA_OPTS" $SAF_JAVA_OPTS"
+
+cd ${root_dir}
+
+java $JAVA_OPTS \
+    -Dlogging.config="file://${root_dir}/config/logback.xml"    \
+    -jar ${executable}                                          \
+    --endpoint="${endpoint}"                                    \
+    --yang-root="${yang_root}"

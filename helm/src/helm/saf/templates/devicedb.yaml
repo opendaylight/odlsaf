@@ -1,0 +1,84 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: devicedb
+  labels:
+    app: devicedb
+spec:
+  type: ClusterIP
+  selector:
+    app: devicedb
+  ports:
+    - port: {{ .Values.ports.devicedb }}
+      name: devicedb-port
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: devicedb
+  labels:
+    app: devicedb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devicedb
+  template:
+    metadata:
+      labels:
+        app: devicedb
+    spec:
+      serviceAccountName: saf-read-pods-account
+      securityContext:
+        runAsUser: {{ .Values.odluserUID }}
+        runAsGroup: {{ .Values.odluserGID }}
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+      initContainers:
+        - name: wait-depends
+          image: "{{ .Values.imageRegistry}}/{{ .Values.images.setup }}"
+          command:
+          - /app/bin/k8s-wait governance
+          imagePullPolicy: {{ .Values.ImagePullPolicy }}
+      containers:
+        - name: devicedb
+          image: "{{ .Values.imageRegistry}}/{{ .Values.images.devicedb }}"
+          imagePullPolicy: {{ .Values.ImagePullPolicy }}
+          ports:
+            - name: devicedb-port
+              containerPort: {{ .Values.ports.devicedb }}
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            httpGet:
+              path: /
+              port: 8000
+          command:
+            - /app/bin/devicedb \
+                    --operations zmq://0.0.0.0:{{ .Values.ports.devicedb }} \
+                    --advertise-operations zmq://devicedb.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.devicedb }}            \
+                    --governance "zmq://governance.{{ .Release.Namespace}}.svc.cluster.local:{{ .Values.ports.governance }}?proxyRetryCount=100&proxyRetryDelay=1000"         \
+                    --odl zmq://odl.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.odl.whoami }}                                \
+                    --napalm ws://napalm.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.napalm }}                               \
+                    --cliengine zmq://cliengine.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.cliengine }}
+          env:
+          {{ if (eq .Values.opentracing "enabled") }}
+          - name: JAEGER_SERVICE_NAME
+            value: devicedb
+          envFrom:
+            - configMapRef:
+                name: saf-jaeger-env
+          {{ end }}
+
+      imagePullSecrets:
+      - name: saf-regcred
+

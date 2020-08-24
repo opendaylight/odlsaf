@@ -1,0 +1,59 @@
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.saf</groupId>
+        <artifactId>docker-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../parents/docker</relativePath>
+    </parent>
+    <artifactId>docker-base</artifactId>
+    <name>SAF :: Docker :: Base image</name>
+    <properties>
+        <docker.image.name>saf-base</docker.image.name>
+        <docker.skip.build>false</docker.skip.build>
+        <docker.image.from>centos:7 as builder</docker.image.from>
+        <docker.image.description>Base docker image for SAF microservices</docker.image.description>
+        <docker.build.steps><![CDATA[
+
+RUN groupadd --force --gid 997 ${pkg.user}
+RUN useradd --create-home --home-dir ${pkg.root.dir} --gid 997 --uid 999 ${pkg.user}
+
+RUN yum-config-manager \
+        --quiet \
+        --setopt=skip_missing_names_on_install=False \
+        --setopt=tsflags='nodocs' \
+        --setopt=override_install_langs=en_US.utf8 \
+        --save \
+    && yum clean all && yum update -y \
+    && yum install -y epel-release \
+    && yum install -y python36 python36-pip python36-libs python36-crypto unzip java-11-openjdk-headless \
+    && yum autoremove -y \
+    && rm -fr /var/cache/yum/*
+
+
+RUN echo "export PATH=${pkg.bin.dir}:/usr/bin:/bin:/usr/sbin:/usr/local/bin" | tee --append /etc/profile
+RUN echo "export PYTHONPATH=${pkg.root.dir}/lib/python3.6/site-packages:${pkg.root.dir}/lib64/python3.6/site-packages" | tee --append /etc/profile
+RUN echo "export SAF_JAVA_OPTS=-Dio.netty.leakDetection.level=DISABLED" | tee --append /etc/profile
+
+USER ${pkg.user}
+
+ENV JAVA_HOME=/etc/alternatives/jre_11
+
+RUN python3.6 -m pip install --prefix ${pkg.root.dir} --upgrade pip setuptools regex pyzmq lxml websockets jaeger-client
+
+FROM scratch
+
+COPY --from=builder / /
+
+]]>
+        </docker.build.steps>
+    </properties>
+</project>

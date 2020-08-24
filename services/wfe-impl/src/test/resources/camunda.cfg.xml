@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <bean id="processEngineConfiguration" class="org.camunda.bpm.extension.process_test_coverage.junit.rules.ProcessCoverageInMemProcessEngineConfiguration">
+
+    <property name="jdbcUrl" value="jdbc:h2:mem:camunda;DB_CLOSE_DELAY=1000" />
+    <property name="jdbcDriver" value="org.h2.Driver" />
+    <property name="jdbcUsername" value="sa" />
+    <property name="jdbcPassword" value="" />
+
+    <!-- Database configurations -->
+    <property name="databaseSchemaUpdate" value="true" />
+
+    <!-- job executor configurations -->
+    <property name="jobExecutorActivate" value="true" />
+    
+    <property name="createIncidentOnFailedJobEnabled" value="true" />
+
+    <property name="history" value="full" />
+
+    <property name="idGenerator" ref="uuidGenerator" />
+
+    <!-- engine plugins -->
+    <property name="processEnginePlugins">
+      <list>
+          <bean id="incidentHandlerPlugin" class="org.opendaylight.saf.wfe.impl.IncidentHandlerProcessEnginePlugin" />
+      </list>
+    </property>
+  </bean>
+  <bean id="uuidGenerator" class="org.camunda.bpm.engine.impl.persistence.StrongUuidGenerator" />
+</beans>
