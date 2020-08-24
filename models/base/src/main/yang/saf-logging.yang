@@ -1,0 +1,127 @@
+module saf-logging {
+    namespace "https://opendaylight.org/saf/logging";
+    prefix "logging";
+
+    description
+        "RPC definitions for Unified Logging Service";
+
+    revision 2020-03-16 {
+        description "Initial revision.";
+    }
+
+    grouping logger-grouping {
+        leaf logger-name {
+            description "The logger for which log-level should be set";
+            type string;
+            default "root";
+        }
+    }
+
+    grouping log-level-grouping {
+        leaf log-level {
+            description "Log level enums that can be used";
+            type enumeration {
+                enum DEBUG;
+                enum INFO;
+                enum WARN;
+                enum ERROR;
+                enum CRITICAL;
+            }
+        }
+    }
+
+    grouping logging {
+        uses log-level-grouping;
+        uses logger-grouping;
+    }
+
+    grouping opentracing-logging {
+        leaf logging {
+            description "Enable/disable opentracing";
+            type enumeration {
+                enum ENABLE;
+                enum DISABLE;
+            }
+        }
+    }
+
+    grouping rpc-status {
+        leaf status {
+            type boolean;
+            description "Status of the rpc. True/False";
+        }
+    }
+
+    container log {
+        config false;
+
+        description "Used to persist the log-level and to get the log-level";
+        list logger-level-mapping {
+            description "List containing logger-name and its log level. Can be used to
+                        get the log-level for a particular logger";
+
+            key logger-name;
+            uses logging;
+        }
+    }
+
+    container opentracing-logging {
+        config false;
+
+        description "Used to persist the opentracing log-level (ie) enabled/disabled";
+        uses opentracing-logging;
+    }
+
+    rpc set_log_level {
+        description "Set log level for particular logger";
+        input {
+            uses logging;
+        }
+
+        output {
+            uses rpc-status;
+        }
+    }
+
+    rpc set_default_log_level {
+        description "Set default log level";
+        input {
+            uses log-level-grouping;
+        }
+
+        output {
+            uses rpc-status;
+        }
+    }
+
+    rpc get_log_level {
+        description "Set level for particular logger";
+        input {
+            uses logger-grouping;
+        }
+        output {
+            uses log-level-grouping;
+        }
+    }
+
+    rpc get_all_loggers {
+        description "Get level for all configured loggers. If level for any logger
+                was not explicitly set, it won't be reported by this method.";
+        output {
+            list logger-level-list {
+                key logger-name;
+                uses logging;
+            }
+        }
+    }
+
+    rpc set_opentracing_logging {
+        input {
+            uses opentracing-logging;
+        }
+
+        output {
+            uses rpc-status;
+        }
+    }
+}

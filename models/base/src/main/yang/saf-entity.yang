@@ -1,0 +1,57 @@
+module saf-entity {
+
+    namespace "https://opendaylight.org/saf/entity";
+    prefix "entity";
+
+    import ietf-yang-types { prefix yang; revision-date 2013-07-15; }
+    import ietf-inet-types { prefix inet; revision-date 2013-07-15; }
+    import saf-base { prefix base; }
+
+    description
+        "Managed entities.";
+
+    revision 2020-02-27 {
+        description "Moved under new namespace and renamed to follow LEAP project
+                guidelines";
+    }
+
+    revision 2016-03-10 {
+        description "Initial revision.";
+    }
+
+    list entity {
+        config true;
+        key "id";
+        description "A list of managed entities.";
+        leaf id {
+            description "System wide authoritative identity for management.";
+            mandatory true;
+            type yang:uuid;
+        }
+        leaf entity {
+            description "A human-readable name.";
+            mandatory true;
+            type string;
+        }
+        leaf uri {
+            description
+                        "The endpoint URI of the service which manages this entity";
+            mandatory true;
+            type inet:uri;
+        }
+        leaf-list modules {
+            description
+                        "The set of YANG modules supported by this entity.";
+            type base:module-name;
+        }
+        leaf-list features {
+            description
+                        "The set of features supported by this entity. Absence of this
+                        element in the configuration implies that the entity supports
+                        all features in all modules. Otherwise the entity supports only
+                        the conditional parts of modules where all required features are
+                        listed.";
+            type string;
+        }
+    }
+}

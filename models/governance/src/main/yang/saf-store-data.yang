@@ -1,0 +1,245 @@
+module saf-store-data {
+    namespace "https://opendaylight.org/saf/store/data";
+    prefix "store";
+
+    import saf-base { prefix base; }
+    import saf-store-base { prefix store-base; }
+    import ietf-yang-types { prefix yang; revision-date 2013-07-15; }
+
+    description "Data store shard data access.";
+
+    revision 2020-02-27 {
+        description "Initial revision.";
+    }
+
+    grouping arg-txid {
+        leaf txid {
+            description
+                        "A handle for a transaction. Procedures performed with the same
+                        handle value relate to the same transaction: the first procedure
+                        containing a previously unseen handle implicitly begins a new
+                        transaction. Data changes made within a transaction are not permanent
+                        until an explicit 'commit' procedure, with the same handle value,
+                        is invoked to end the transaction. Alternatively, data changes
+                        in a transaction may be discarded by an explicit 'cancel' procedure.
+                        In order to allow multiple clients to interact with the same data
+                        store service, that service should provide a 'txid' method which
+                        returns a new transaction id whose value is not currently in use
+                        for another transaction. There is no hard requirement for a client
+                        to use this method: a single client or group of clients may take
+                        responsibility for generating non-conflicting transaction ids
+                        according to their (collective) needs.";
+            mandatory true;
+            type yang:uuid;
+        }
+    }
+
+    grouping dcn-identifier {
+        leaf name {
+            description "Unique identifier of data change listener registration.";
+            type yang:uuid;
+        }
+    }
+
+    rpc exists {
+        description
+                "A request to check whether any data is available at path in the
+                given data store for an entity. An output value of 'true' indicates
+                that there is data: 'false' that there is no data.";
+        input {
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+        }
+        output {
+            uses base:arg-success;
+        }
+    }
+
+    rpc read {
+        description
+                "A request to read all data at path in the given data store for
+                an entity. The output value includes all data at the store subtree
+                identified by path.";
+        input {
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+        }
+        output {
+            uses store-base:arg-data;
+        }
+    }
+
+    rpc txid {
+        description
+                "Generate and return a locally unique transaction id. The returned
+                value must not be in use by an active transaction. A server should
+                also not return a value which has been recently used (according
+                to the server's definition of recent.)";
+        output {
+            uses arg-txid;
+        }
+    }
+
+    rpc put {
+        description
+                "Store data at path in the given data store for an entity. This
+                procedure will overwrite any and all existing data at path, when
+                the transaction to which it belongs is committed.";
+        input {
+            uses arg-txid;
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+            uses store-base:arg-data;
+        }
+    }
+
+    rpc merge {
+        description
+                "Store data at path in the given data store for an entity. This
+                procedure merges this new data with any existing data at path,
+                with the new data overriding, when the transaction to which it
+                belongs is committed.";
+        input {
+            uses arg-txid;
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+            uses store-base:arg-data;
+        }
+    }
+
+    rpc delete {
+        description
+                "Delete all data at path in the given data store for an entity.
+                This procedure deletes all data at path when the transaction to
+                which it belongs is committed.";
+        input {
+            uses arg-txid;
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+        }
+    }
+
+    rpc commit {
+        description
+                "Make permanent all data changes made in the identified transaction,
+                then end that transaction. An output value of 'true' indicates
+                that all changes were committed and that the transaction has ended:
+                an output value of 'false' indicates that the transaction could
+                not be ended for some reason. A failed transaction is not implicitly
+                ended in order to allow for it to be analyzed/debugged. A client
+                must explicitly 'cancel' the transaction to end it. A client may
+                use the 'error' method to read any retained description of the
+                last failure for a transaction.";
+        input {
+            uses arg-txid;
+        }
+        output {
+            uses base:arg-success;
+        }
+    }
+
+    rpc cancel {
+        description
+                "Discard all data changes made in the identified transaction,
+                then end that transaction. The next data modification procedure
+                using the same transaction handle implicitly begins a new transaction.";
+        input {
+            uses arg-txid;
+        }
+    }
+
+    rpc error {
+        description
+                "Return a human-readable description of the last failure for the
+                given transaction. If there is no transaction with that id or
+                there is no failure for the transaction, then no reason or an
+                empty string may be returned.";
+        input {
+            uses arg-txid;
+        }
+        output {
+            leaf-list reason {
+                description "List of errors that occurred during commit. Can be empty if no
+                                failures occurred";
+                type string;
+            }
+        }
+    }
+
+    rpc add-listener {
+        description "Add a data change listener for a path. The server should allocate
+                at least one URI for notifications. When the change is triggered
+                a notification at a given URI with the given name will be produced.
+                The combination URI+ DCN Name should be unique across all entities
+                and datastores supported by a particular endpoint. The URI may
+                be reused across multiple listeners. In that case the actual triggered
+                listener is identified by the DCN Name. The notification may contain
+                the changed tree data from the path specified in the DCN creation
+                request downwards or null. The actual choice - to add or not the
+                actual changed content to the notification is up to the implementer
+                on the server side. Client developers may rely that the payload
+                if not null is the changed data from the DCN request path downwards,
+                but should not rely on the notification being always non-null.
+                If the payload body is null, the client implementation may need
+                to query the data to fetch the changes. If a portion of the tree
+                which has listeners associated with it is deleted all notifications
+                are triggered with a null payload. There is unfortunately no way
+                to distinguish between a notification for a deletion and a notification
+                for which the server has opted not to provide \"modified data\"
+                payload. DCNs located with a part of the tree which is deleted
+                fire only at the moment of deletion. From there onwards they are
+                orphaned and will not fire again. Re-creation of the tree at a
+                later date does not trigger a re-association of orphaned DCNs
+                to the newly created tree.";
+        input {
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+            leaf transport {
+                description "Transport protocol which will be used to communicate data changes.
+                                When omitted, implementation will use same protocol as was used
+                                in this request";
+                type base:transport-protocol;
+                mandatory false;
+            }
+        }
+
+        output {
+            uses store-base:arg-uri {
+                description "Publisher endpoint to which data change notifications will be
+                                published";
+            }
+            uses dcn-identifier;
+        }
+    }
+
+    rpc delete-listener {
+        description "Delete data change listener previously obtained via add-listener
+                RPC call";
+        input {
+            uses store-base:arg-uri;
+            uses dcn-identifier;
+        }
+        output {
+            uses base:arg-success;
+        }
+    }
+
+    notification data-change-notification {
+        description "Notification about changed data";
+        list changes {
+            description "Set of changes on given data tree";
+            anyxml path {
+                description "Path to data where change occured";
+            }
+            anyxml data {
+                description "Modified data";
+            }
+        }
+    }
+}

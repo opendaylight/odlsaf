@@ -1,0 +1,16 @@
+{
+  "workflow-name": "GET",
+  "workflow-input": [
+    {
+      "yang-path": "brocade-mlx-interfaces:interfaces/ethernet/interface/{ethernet 1/8}"
+    },
+    {
+      "yang-path": ""
+    },
+    {
+      "yang-pathdfsd": ""
+    },
+    {
+    }
+  ]
+}

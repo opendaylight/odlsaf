@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.mdsal</groupId>
+        <artifactId>binding-parent</artifactId>
+        <version>6.0.1</version>
+        <relativePath />
+    </parent>
+    <groupId>org.opendaylight.saf</groupId>
+    <artifactId>binding-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>SAF :: Parent :: Binding</name>
+    <packaging>pom</packaging>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opendaylight.saf</groupId>
+                <artifactId>saf-artifacts</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>bus-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-compile</id>
+                            <configuration>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>org.projectlombok</groupId>
+                                        <artifactId>lombok</artifactId>
+                                        <version>1.18.12</version>
+                                    </path>
+                                </annotationProcessorPaths>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <activation>
+                <file>
+                    <exists>src/main/yang</exists>
+                </file>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.opendaylight.yangtools</groupId>
+                            <artifactId>yang-maven-plugin</artifactId>
+                            <version>5.0.2</version>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.opendaylight.saf</groupId>
+                                    <artifactId>yang-code-generators</artifactId>
+                                    <version>1.0.0-SNAPSHOT</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.opendaylight.mdsal</groupId>
+                                    <artifactId>maven-sal-api-gen-plugin</artifactId>
+                                    <version>6.0.1</version>
+                                </dependency>
+                            </dependencies>
+                            <executions>
+                                <execution>
+                                    <id>binding</id>
+                                    <goals>
+                                        <goal>generate-sources</goal>
+                                    </goals>
+                                    <configuration>
+                                        <codeGenerators>
+                                            <generator>
+                                                <codeGeneratorClass>org.opendaylight.mdsal.binding.maven.api.gen.plugin.CodeGeneratorImpl
+                                                </codeGeneratorClass>
+                                                <outputBaseDir>${project.build.directory}/generated-sources/mdsal-binding
+                                                </outputBaseDir>
+                                                <resourceBaseDir>${project.build.directory}/generated-sources/spi
+                                                </resourceBaseDir>
+                                            </generator>
+                                            <generator>
+                                                <codeGeneratorClass>org.opendaylight.saf.codegen.JavaCodeGeneratorImpl
+                                                </codeGeneratorClass>
+                                                <outputBaseDir>${project.build.directory}/generated-sources/saf-yang
+                                                </outputBaseDir>
+                                                <resourceBaseDir>${project.build.directory}/generated-sources/saf-yang
+                                                </resourceBaseDir>
+                                                <additionalConfiguration>
+                                                    <java.package.prefix>${yang.gen.package}</java.package.prefix>
+                                                </additionalConfiguration>
+                                            </generator>
+                                        </codeGenerators>
+                                        <inspectDependencies>true</inspectDependencies>
+                                        <yangFilesRootDir>${project.basedir}/src/main/yang</yangFilesRootDir>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-maven-plugin</artifactId>
+                            <version>1.18.12.0</version>
+                            <executions>
+                                <execution>
+                                    <id>delombok</id>
+                                    <configuration>
+                                        <sourceDirectory>${project.build.directory}/generated-sources/saf-yang
+                                        </sourceDirectory>
+                                        <outputDirectory>${project.build.directory}/delombok/saf-yang</outputDirectory>
+                                        <addOutputDirectory>false</addOutputDirectory>
+                                    </configuration>
+                                    <goals>
+                                        <goal>delombok</goal>
+                                    </goals>
+                                    <phase>process-sources</phase>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-antrun-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>replace-sources</id>
+                                    <goals>
+                                        <goal>run</goal>
+                                    </goals>
+                                    <phase>process-resources</phase>
+                                    <configuration>
+                                        <target>
+                                            <mkdir dir="${project.build.directory}/delombok/saf-yang" />
+                                            <move todir="${project.build.directory}/generated-sources/saf-yang">
+                                                <fileset dir="${project.build.directory}/delombok/saf-yang">
+                                                    <include name="**/*.java" />
+                                                </fileset>
+                                            </move>
+                                        </target>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

@@ -1,0 +1,23 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+spring.datasource:
+  url: jdbc:h2:./camunda-db;DB_CLOSE_DELAY=-1;MVCC=TRUE;DB_CLOSE_ON_EXIT=FALSE
+  username: sa
+  password: sa
+spring.h2.console.enabled: true
+camunda.bpm:
+  filter:
+    create: All Tasks
+  job-execution:
+    enabled: true
+    max-jobs-per-acquisition: 2
+    wait-time-in-millis: 600000
+    lock-time-in-millis: 400000
+    failed-job-retry-time-cycle: R0/PT0S
+spring:
+   main:
+     web-application-type: none

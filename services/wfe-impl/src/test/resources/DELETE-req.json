@@ -1,0 +1,16 @@
+{
+	"workflow-name": "DELETE",
+	"workflow-input": {
+		"array-element": 
+		{
+			"yang-path": "config/jsonrpc:config/configured-endpoints/arista-eos/yang-ext:mount/openconfig-interfaces:interfaces/interface/Ethernet1",
+			"entity" : "arista-eos",
+			"prechecks": {
+				"array-element": "PathValidation"
+			},
+			"postchecks": {
+				"array-element": "VerifyDelete"
+			}
+		}	
+	}
+}

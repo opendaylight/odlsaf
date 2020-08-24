@@ -1,0 +1,104 @@
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.saf</groupId>
+        <artifactId>binding-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../binding</relativePath>
+    </parent>
+    <artifactId>jsonrpc-dependencies</artifactId>
+    <name>SAF :: JSONRPC dependencies</name>
+    <description>Meta package which declares all JSONRPC related dependencies</description>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opendaylight.saf</groupId>
+                <artifactId>saf-artifacts</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc</groupId>
+            <artifactId>jsonrpc-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc</groupId>
+            <artifactId>jsonrpc-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>bus-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>bus-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>bus-jsonrpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>bus-messagelib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.security</groupId>
+            <artifactId>security-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.security</groupId>
+            <artifactId>security-noop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.security</groupId>
+            <artifactId>security-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>transport-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>transport-zmq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc.bus</groupId>
+            <artifactId>bus-messagelib</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jaegertracing</groupId>
+            <artifactId>jaeger-core</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+    </dependencies>
+</project>

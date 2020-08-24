@@ -1,0 +1,84 @@
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.odlparent</groupId>
+        <artifactId>odlparent</artifactId>
+        <version>7.0.2</version>
+        <relativePath />
+    </parent>
+    <groupId>org.opendaylight.saf</groupId>
+    <artifactId>packaging-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>SAF :: Parent :: Packaging</name>
+    <packaging>pom</packaging>
+    <description>Base pom.xml to create package using provided assembly id</description>
+    <properties>
+        <pkg.name>${project.artifactId}</pkg.name>
+        <pkg.root.dir>/app</pkg.root.dir>
+        <pkg.bin.dir>${pkg.root.dir}/bin</pkg.bin.dir>
+        <pkg.data.dir>${pkg.root.dir}/${pkg.name}</pkg.data.dir>
+        <pkg.library.dir>${pkg.root.dir}/lib</pkg.library.dir>
+        <pkg.python.dir>${pkg.library.dir}/python3.6/site-packages</pkg.python.dir>
+        <pkg.java.dir>${pkg.library.dir}/java</pkg.java.dir>
+        <pkg.user>odluser</pkg.user>
+        <package.assembly.id>bin-package</package.assembly.id>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opendaylight.saf</groupId>
+                <artifactId>saf-artifacts</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+             <groupId>org.opendaylight.saf</groupId>
+             <artifactId>package-assemblies</artifactId>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <executions>
+                        <execution>
+                            <id>create-zip</id>
+                            <configuration>
+                                <appendAssemblyId>false</appendAssemblyId>
+                                <attach>true</attach>
+                                <descriptorRefs>
+                                    <descriptorRef>${package.assembly.id}</descriptorRef>
+                                </descriptorRefs>
+                            </configuration>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.opendaylight.saf</groupId>
+                            <artifactId>package-assemblies</artifactId>
+                            <version>1.0.0-SNAPSHOT</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

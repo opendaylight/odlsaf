@@ -1,0 +1,81 @@
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.saf</groupId>
+        <artifactId>docker-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../parents/docker</relativePath>
+    </parent>
+    <artifactId>docker-governance</artifactId>
+    <name>SAF :: Docker :: Governance</name>
+    <properties>
+        <docker.image.name>saf-governance</docker.image.name>
+        <docker.skip.build>false</docker.skip.build>
+        <docker.image.from>${docker.vendor}/saf-base:${docker.image.version} as builder</docker.image.from>
+        <docker.image.description>Base docker image for SAF microservices</docker.image.description>
+        <docker.build.steps><![CDATA[
+COPY *.zip /tmp/
+
+RUN cd /tmp; unzip -qo -d ${pkg.root.dir} '*.zip' && rm -fr /tmp/*.zip; chmod o+x ${pkg.bin.dir}/*
+
+RUN curl -q -L https://github.com/openconfig/public/archive/aab7a5ccb91791a4.tar.gz | tar -zxf - && \
+    cd public-aab7a5ccb91791a4*  && \
+    find release/models -type f -name \*.yang -exec sed -i 's/\^(/(/g; s/)\$/)/g' {} + && \
+    mkdir -p ${pkg.root.dir}/share/yang/standard ${pkg.root.dir}/share/yang/odl  && \
+    mv release/models ${pkg.root.dir}/share/yang/standard/openconfig
+
+COPY META-INF/yang/*.yang ${pkg.root.dir}/share/yang/odl/
+
+RUN chown 999:997 -R ${pkg.root.dir}
+
+FROM ${docker.vendor}/saf-base:${docker.image.version}
+
+COPY --from=builder ${pkg.root.dir} ${pkg.root.dir}
+
+]]>
+        </docker.build.steps>
+    </properties>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>unpack-yang-models</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <silent>true</silent>
+                                <includeTypes>jar</includeTypes>
+                                <includes>META-INF/yang/*.yang </includes>
+                                <outputDirectory>${project.build.directory}/docker-build</outputDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.opendaylight.saf</groupId>
+            <artifactId>docker-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.saf.service</groupId>
+            <artifactId>governance-packaging</artifactId>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+</project>

@@ -1,0 +1,68 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+tokens:
+  odl: http://lsc:8181
+  wfe: zmq://wfe:24325
+  whoami: zmq://0.0.0.0:24330
+  odluser: admin
+  odlpassword: admin
+  governance: zmq://governance:24320
+steps:
+- governance_wait_for_entity:
+    name: devicedb
+    store: 0
+- governance_wait_for_entity:
+    name: wfe
+    store: -1
+- odl_ready:
+    odl: '%odl%'
+    username: '%odluser%'
+    password: '%odlpassword%'
+- odl_restconf:
+    method: put
+    uri: '%odl%/restconf/config/jsonrpc:config'
+    data: |
+      {
+        "jsonrpc:config": {
+          "governance-root":"%governance%",
+          "who-am-i": "%whoami%"
+        }
+      }
+    username: '%odluser%'
+    password: '%odlpassword%'
+- odl_restconf:
+    method: put
+    uri: '%odl%/restconf/config/jsonrpc:config/configured-endpoints/devicedb'
+    data: |
+      {
+        "configured-endpoints": {
+          "name": "devicedb",
+          "modules": [
+            "saf-device-database"
+          ]
+        }
+      }
+    username: '%odluser%'
+    password: '%odlpassword%'
+- odl_restconf:
+    method: put
+    uri: '%odl%/restconf/config/jsonrpc:config/configured-endpoints/wfe'
+    data: |
+      {
+        "configured-endpoints": {
+          "name": "wfe",
+          "modules": [
+            "saf-wfe"
+          ],
+         "rpc-endpoints": [{
+              "path": "{}",
+              "endpoint-uri": "%wfe%"
+          }]
+        }
+      }
+    username: '%odluser%'
+    password: '%odlpassword%'
