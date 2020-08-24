@@ -1,0 +1,47 @@
+{
+  "workflow-name": "PUT",
+  "workflow-input": [
+    {
+      "yang-path": "config/jsonrpc:config/configured-endpoints/junos-mx-1/yang-ext:mount/openconfig-interfaces:interfaces/interface/{ge-0/0/0}",
+      "prechecks": [
+        "path_validation"
+      ],
+      "postchecks": [
+        "VerifyPut"
+      ],
+      "config-data": {
+        "interface": [
+          {
+            "name": "ge-0/0/0",
+            "config": {
+              "description": "Connecting to mx2-Test123"
+            },
+            "subinterfaces": {
+              "subinterface": [
+                {
+                  "index": 0,
+                  "config": {
+                    "index": 0
+                  },
+                  "openconfig-if-ip:ipv4": {
+                    "addresses": {
+                      "address": [
+                        {
+                          "ip": "20.1.1.4",
+                          "config": {
+                            "ip": "20.1.1.4",
+                            "prefix-length": 24
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

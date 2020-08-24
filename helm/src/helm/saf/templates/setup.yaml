@@ -1,0 +1,41 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: leap-init
+  namespace: {{ .Release.Namespace }}
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      serviceAccountName: saf-read-pods-account
+      initContainers:
+        - name: wait-wfe
+          image: "{{ .Values.imageRegistry}}/{{ .Values.images.k8sWait }}"
+          command: ['sh', '-c', 'source /etc/profile && /opt/lumina/leap/bin/leap-k8s-wait wfe']
+        - name: wait-lsc
+          image: "{{ .Values.imageRegistry}}/{{ .Values.images.k8sWait }}"
+          command: ['sh', '-c', 'source /etc/profile && /opt/lumina/leap/bin/leap-k8s-wait lsc']
+        - name: wait-devicedb
+          image: "{{ .Values.imageRegistry}}/{{ .Values.images.k8sWait }}"
+          command: ['sh', '-c', 'source /etc/profile && /opt/lumina/leap/bin/leap-k8s-wait devicedb']
+      containers:
+      - name: init-leap
+        image: "{{.Values.imageRegistry}}/{{ .Values.images.setup }}"
+        command: 
+            - sh
+            - '-c'
+            - |
+              source /etc/profile && /app/bin/lsc-init --lsc lsc.{{ .Release.Namespace }}.svc.cluster.local \
+                       --governance zmq://governance.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.governance }} \
+                       --who-am-i zmq://0.0.0.0:{{ .Values.ports.odl.whoami }} \
+                       --wfe zmq://wfe.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.wfe }}
+      imagePullSecrets:
+      - name: saf-regcred
+      restartPolicy: Never

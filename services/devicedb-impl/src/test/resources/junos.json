@@ -1,0 +1,18 @@
+{
+    "device": {
+        "entity": "junos",
+        "device-type": "junos",
+        "login-password": "password",
+        "enable-password": "",
+        "address": "10.11.12.13",
+        "username": "root",
+        "modules": [
+            "openconfig-if-ethernet",
+            "openconfig-types",
+            "openconfig-routing-policy",
+            "openconfig-vlan",
+            "napalm-if-ip"
+        ],
+        "timeout": "30000"
+    }
+}

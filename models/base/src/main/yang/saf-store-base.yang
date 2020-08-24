@@ -1,0 +1,114 @@
+module saf-store-base {
+
+    namespace "https://opendaylight.org/saf/store/base";
+    prefix "store-base";
+
+    import saf-base { prefix base; }
+    import ietf-inet-types { prefix inet; revision-date 2013-07-15; }
+
+    description "SAF data store basic definitions.";
+
+    revision 2020-02-28 {
+        description "Initial revision.";
+    }
+
+    typedef data-store {
+        description
+                "A type for specifying a target data store. A data store may be
+                specified as either a string (an enum label) or as an integer
+                value. The integer is not range-restricted, meaning that any integer
+                value may be sent. (An integer value may map to an enum label
+                from this union but is not required to do so. The use of such
+                values, assignment of their meaning, and support in applications
+                is beyond the scope of this type model.)";
+        reference
+                "RFC 6020: YANG - A Data Modeling Language Section 4.2.3. State
+                Data";
+
+        type union {
+            type enumeration {
+                enum none {
+                    value -1;
+                    description "The value specifying no data store.";
+                }
+                enum config {
+                    value 0;
+                    description "The value specifying the config data store.";
+                }
+                enum operational {
+                    value 1;
+                    description "The value specifying the operational data store.";
+                }
+            }
+            type int32;
+        }
+    }
+
+    grouping arg-data {
+        anyxml data {
+            description
+                        "A general purpose argument for structured or atomic data. The
+                        data is JSON-encoded.";
+            reference
+                        "draft-ietf-netmod-yang-json JSON Encoding of Data Modeled with
+                        YANG.";
+            mandatory true;
+        }
+    }
+
+    grouping arg-store {
+        leaf store {
+            description "The data store that is the subject of this procedure.";
+            mandatory true;
+            type data-store;
+        }
+    }
+
+    grouping arg-entity {
+        leaf entity {
+            description
+                        "The name of the managed entity that is the subject of this procedure.";
+            mandatory true;
+            type string;
+        }
+    }
+
+    grouping arg-path {
+        anyxml path {
+            description
+                        "The path specifying the model subtree that is the subject of
+                        this procedure. A path is a YANG instance-identifier encoded as
+                        a JSON object. (The rules for encoding a JSON object follow the
+                        specification in draft-ietf-netmod-yang-json Section 4.) An empty
+                        object {} addresses the whole tree (the superset of all modelled
+                        data) for an entity. An object {\"foo:\": {}} addresses the whole
+                        tree for module 'foo'. (The namespace qualifier is 'foo' and the
+                        name is ''.) An object {\"foo:bar\": {}} addresses the subtree
+                        at node 'bar' in module 'foo'. An object {\"foo:bar\": {\"baz\":
+                        {}}} addresses the subtree at node '/bar/baz' in module 'foo'.";
+            reference
+                        "RFC 6020: YANG - A Data Modeling Language Section 9.13. The instance-identifier
+                        Built-In Type. draft-ietf-netmod-yang-json JSON Encoding of Data
+                        Modeled with YANG.";
+            mandatory true;
+        }
+    }
+
+    grouping arg-uri {
+        leaf uri {
+            description
+                        "The endpoint uri of the service which governs the data store
+                        subtree. The client using this uri value to access the service
+                        may be passed client configuration options in the query component
+                        of the uri (RFC 3986 Section 3.4). Client configuration options
+                        recognised by the client should be removed from the uri before
+                        onward use of the uri value in accessing the service. Other key/value
+                        pairs in the query component must be ignored by the client with
+                        regard to their use as configuration options.";
+            reference
+                        "RFC 3986: Uniform Resource Identifier (URI): Generic Syntax";
+            mandatory true;
+            type inet:uri;
+        }
+    }
+}

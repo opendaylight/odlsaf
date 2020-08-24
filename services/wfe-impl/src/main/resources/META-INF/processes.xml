@@ -1,0 +1,21 @@
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<process-application xmlns="http://www.camunda.org/schema/1.0/ProcessApplication"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <process-archive name="wfe">
+        <process-engine>default</process-engine>
+        <properties>
+            <property name="isScanForProcessDefinitions">true</property>
+            <property name="isDeleteUponUndeploy">false</property>
+            <property name="history">full</property>
+            <property name="jobExecutorActivate">true</property>
+            <property name="createIncidentOnFailedJobEnabled">true</property>
+            <property name="failedJobRetryTimeCycle">R0/PT0S</property>
+        </properties>
+    </process-archive>
+</process-application>

@@ -1,0 +1,52 @@
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opendaylight.odlparent</groupId>
+        <artifactId>feature-repo-parent</artifactId>
+        <version>7.0.5</version>
+        <relativePath />
+    </parent>
+
+    <properties>
+        <jsonrpc.version>1.10.0-SNAPSHOT</jsonrpc.version>
+    </properties>
+
+    <groupId>org.opendaylight.saf</groupId>
+    <artifactId>features-saf</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>feature</packaging>
+    <name>SAF :: Features :: repository</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.opendaylight.saf</groupId>
+            <artifactId>odl-saf-all</artifactId>
+            <version>${project.version}</version>
+            <type>xml</type>
+            <classifier>features</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.saf</groupId>
+            <artifactId>odl-saf-opentracing</artifactId>
+            <version>${project.version}</version>
+            <type>xml</type>
+            <classifier>features</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.jsonrpc</groupId>
+            <artifactId>odl-jsonrpc-all</artifactId>
+            <version>${jsonrpc.version}</version>
+            <type>xml</type>
+            <classifier>features</classifier>
+        </dependency>
+    </dependencies>
+</project>

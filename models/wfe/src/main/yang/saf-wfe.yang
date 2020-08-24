@@ -1,0 +1,192 @@
+module saf-wfe {
+    namespace "https://opendaylight.org/saf/wfe";
+    prefix "wfe";
+
+    import ietf-yang-types { prefix yt; revision-date 2013-07-15; }
+
+    description
+        "RPC definitions for Workflow Engine Service";
+
+    revision 2019-02-14 {
+        description "Initial revision.";
+    }
+
+    grouping job-id {
+        leaf job-id {
+            description "Unique job identifier associated with submitted workflow execution.";
+            type yt:uuid;
+        }
+    }
+
+    grouping list-filter {
+        leaf filter {
+            description "Regular expression used to filter out results";
+            type string;
+            default ".*";
+        }
+    }
+
+    grouping workflow-status {
+        leaf workflow-status {
+            description "Status of workflow";
+            type workflow-state;
+        }
+    }
+
+    typedef workflow-state {
+        type enumeration {
+            enum ACTIVE {
+                description "running process instance";
+            }
+            enum SUSPENDED {
+                description "suspended process instance";
+            }
+            enum COMPLETED {
+                description "completed through normal end event";
+            }
+            enum EXTERNALLY_TERMINATED {
+                description "terminated externally, for instance through REST API";
+            }
+            enum INTERNALLY_TERMINATED {
+                description "terminated internally, for instance by terminating boundary event";
+            }
+        }
+        description "State of workflow";
+    }
+
+    grouping workflow-instance-item {
+        leaf id {
+            description "Process instance identifier";
+            type yt:uuid;
+        }
+        leaf start-time {
+            description "Time when process started";
+            type yt:date-and-time;
+        }
+        leaf end-time {
+            description "Time when process finished";
+            type string;
+        }
+        leaf state {
+            type workflow-state;
+        }
+        leaf process-definition-id {
+            type string;
+        }
+        leaf process-definition-key {
+            type string;
+        }
+        leaf duration-in-milliseconds {
+            description "Job duration in milliseconds";
+            type uint32;
+        }
+    }
+
+    rpc execute {
+        description "Execute given workflow on supplied list of devices.";
+        input {
+            leaf workflow-name {
+                description "Name of workflow to execute";
+                type string;
+            }
+            anyxml workflow-input {
+                description "Workflow-specific input data";
+            }
+        }
+        output {
+            uses job-id;
+        }
+    }
+
+    rpc status {
+        description "Get status of given workflow";
+        input {
+            uses job-id;
+        }
+        output {
+            uses workflow-status;
+            anyxml workflow-output {
+                description "TBD workflow output";
+            }
+        }
+    }
+
+    rpc list {
+        description "List all process instances that match given optional filter.
+                    If filter is not provided, then all process instances are returned.";
+        input {
+            uses list-filter;
+        }
+        output {
+            list workflow-instances {
+                description "List of process instances";
+                key "id";
+                uses workflow-instance-item;
+            }
+        }
+    }
+
+    rpc export {
+        description "Export all BPMN definitions to ZIP file, optionally filtered by regular expression
+            applied to workflow name (not BPMN file name)";
+        input {
+            uses list-filter;
+            leaf include-default {
+                description "Flag to control exporting of default (built-in) workflow definitions. Filter is not
+                    applied to default workflow definitions. When set to `false` or omitted, built-in workflow definitions
+                    won't be included in exported archive.";
+                type boolean;
+                default "false";
+            }
+        }
+        output {
+            leaf filename {
+                description "Name of archive with exported process definitions";
+                type string;
+            }
+            leaf success {
+                description "Flag indicating success of operation";
+                type boolean;
+            }
+            leaf error {
+                description "Cause of export error";
+                type string;
+            }
+        }
+    }
+
+    notification workflow-state-changed {
+        description "Notification about change in job status. Job status changes are bulked into list";
+        list workflows {
+            uses job-id;
+            uses workflow-status;
+        }
+    }
+
+    rpc cancel {
+        input {
+            uses job-id;
+        }
+        output {
+            uses workflow-status;
+        }
+    }
+
+    rpc activate {
+        input {
+            uses job-id;
+        }
+        output {
+            uses workflow-status;
+        }
+    }
+
+    rpc suspend {
+        input {
+            uses job-id;
+        }
+        output {
+            uses workflow-status;
+        }
+    }
+}

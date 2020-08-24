@@ -1,0 +1,182 @@
+module saf-device-database {
+    namespace "https://opendaylight.org/saf/devicedb";
+    prefix "database";
+
+    import ietf-inet-types { prefix inet; revision-date 2013-07-15; }
+    import ietf-yang-types { prefix yt; revision-date 2013-07-15; }
+    import saf-base { prefix base; }
+
+
+    description
+        "A device entity inventory.";
+
+    revision 2016-06-08 {
+        description "Initial revision.";
+    }
+
+    grouping optional-args {
+
+        leaf port {
+            description
+                        "The port number to use when logging in to the device.";
+            type int64;
+        }
+
+        leaf timeout {
+            description
+                        "The timeout value is for jsonRPC bus timeout and device connection
+                        timeout";
+            type int64;
+        }
+
+        leaf transport {
+            description
+                        "Transport protocol to use when logging in to the device";
+
+            type enumeration {
+                enum http;
+                enum https;
+                enum ssh;
+                enum telnet;
+            }
+            status "deprecated";
+        }
+
+        list tags {
+            description "Application-specific key-value pairs. Actual meaning of tags
+                        can be recognized by some backend services, but no check for presence
+                        is done by device database.";
+            key name;
+            leaf name {
+                description "Tag name";
+                type string;
+            }
+            leaf value {
+                description "Tag value";
+                type string;
+            }
+        }
+    }
+
+    grouping lock-attributes {
+        leaf lock-state {
+            config false;
+            type boolean;
+            default false;
+            description "Operational state of device whether in use by any workflow";
+        }
+        leaf lock-id {
+            config false;
+            type yt:uuid;
+            description "Lock identifier. When non-empty, caller is allowed to lock same device
+                multiple times without error.";
+        }
+    }
+
+    grouping operational-attributes {
+        uses lock-attributes;
+        leaf mount-status {
+            description "Status of LSC mounpoint associated with device. State 'completed'
+                        does not necessarily means that device is accessible via mount
+                        point, only that all actions were taken localy to do so.";
+            type enumeration {
+                enum none {
+                    description "Mount operation not started yet";
+                }
+                enum mounting {
+                    description "Mount operation in progress";
+                }
+                enum completed {
+                    description "Mount operation completed";
+                }
+            }
+        }
+    }
+
+    grouping basic-attributes {
+        leaf entity {
+            description "The device entity name";
+            mandatory true;
+            type string;
+        }
+    }
+
+    grouping device-attributes {
+        uses basic-attributes;
+
+        leaf address {
+            description "The IP address of the device.";
+            mandatory true;
+            type inet:ip-address;
+        }
+
+        leaf username {
+            description "The user name to use when logging in to the device.";
+            mandatory true;
+            type string;
+        }
+
+        leaf login-password {
+            description "The password to use when logging in to the device.";
+            mandatory true;
+            type string;
+        }
+
+        leaf enable-password {
+            description "The password to use when starting privileged mode.";
+            type string;
+        }
+
+        uses base:arg-modules {
+            description
+                            "list of yang models supported by this device to be mounted.";
+        }
+
+        leaf device-type {
+            description "Type of the device";
+            mandatory true;
+            type enumeration {
+                enum mlx;
+                enum icx;
+                enum eos;
+                enum ios;
+                enum ios-xr;
+                enum junos;
+                enum nxos;
+            }
+        }
+        uses optional-args;
+    }
+
+    container devices-state {
+        list device-state {
+            config false;
+            key "entity";
+            description "List of devices";
+            uses basic-attributes;
+            uses operational-attributes;
+        }
+    }
+
+    container devices {
+        config true;
+        list device {
+            key "entity";
+            description "A device entity inventory list.";
+
+            uses device-attributes;
+        }
+    }
+
+    rpc device-lock {
+         description "Place an exclusive lock on device. When lock is already in place,
+                        return value of `success` is False.";
+        input {
+            uses basic-attributes;
+            uses lock-attributes;
+        }
+        output {
+            uses base:arg-success;
+        }
+    }
+}
