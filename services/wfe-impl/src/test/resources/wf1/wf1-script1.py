@@ -1,0 +1,1 @@
+execution.getProcessInstance().setVariable(execution.getProcessInstanceId(), []);

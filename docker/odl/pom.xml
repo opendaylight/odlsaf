@@ -1,0 +1,69 @@
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.saf</groupId>
+        <artifactId>docker-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../parents/docker</relativePath>
+    </parent>
+    <artifactId>docker-odl</artifactId>
+    <name>SAF :: Docker :: ODL</name>
+    <properties>
+        <docker.image.name>saf-odl</docker.image.name>
+        <docker.skip.build>false</docker.skip.build>
+        <docker.image.from>${docker.vendor}/saf-base:${docker.image.version} as builder</docker.image.from>
+        <docker.image.description>ODL docker image</docker.image.description>
+        <docker.build.steps><![CDATA[
+COPY *.zip /tmp/
+
+RUN cd /tmp; unzip -q '*.zip' && cp saf-karaf-${project.version}/* -fr -t ${pkg.root.dir} && chmod +x ${pkg.bin.dir}/*
+
+RUN echo "log4j2.logger.karaf.name = org.apache.karaf" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.karaf.level = WARN" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.aries.name = org.apache.aries" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.aries.level = WARN" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.ops4j.name = org.ops4j.pax" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.ops4j.level = WARN" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.controller.name = org.opendaylight.controller" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.controller.level = WARN" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.yangparser.name = org.opendaylight.yangtools.yang.parser" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.yangparser.level  = WARN"| tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.saf.name = org.opendaylight.saf" | tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    echo "log4j2.logger.saf.level  = INFO"| tee --append /app/etc/org.ops4j.pax.logging.cfg && \
+    sed '/rolling/Id' -i /app/etc/org.ops4j.pax.logging.cfg && \
+    sed '/audit/d' -i /app/etc/org.ops4j.pax.logging.cfg
+
+RUN echo "customFilterList=org.opendaylight.saf.opentracing.restconf.RestconfFilter" | tee --append  /app/etc/org.opendaylight.aaa.filterchain.cfg
+RUN echo "org.opendaylight.jsonrpc.bus.jmx=true" | tee --append /app/etc/system.properties
+
+RUN echo "daexim.dir=data/daexim" | tee --append /app/etc/org.opendaylight.daexim.cfg
+
+RUN chown 999:997 -R ${pkg.root.dir}
+
+FROM ${docker.vendor}/saf-base:${docker.image.version}
+
+COPY --from=builder ${pkg.root.dir} ${pkg.root.dir}
+
+]]>
+        </docker.build.steps>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.opendaylight.saf</groupId>
+            <artifactId>docker-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.saf</groupId>
+            <artifactId>saf-karaf</artifactId>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+</project>

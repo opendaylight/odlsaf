@@ -1,0 +1,74 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: governance
+  labels:
+    app: governance
+spec:
+  type: ClusterIP
+  selector:
+    app: governance
+  ports:
+    - port: {{ .Values.ports.governance }}
+      name: governance-port
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: governance
+  labels:
+    app: governance
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: governance
+  template:
+    metadata:
+      labels:
+        app: governance
+    spec:
+      containers:
+      - name: governance
+        image: "{{.Values.imageRegistry}}/{{ .Values.images.governance }}"
+        ports:
+          - name: governance-port
+            containerPort: {{ .Values.ports.governance }}
+        volumeMounts:
+        - mountPath: "/app/share/yang/extra/"
+          name: yang-volume
+          subPath: governance/yang
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          httpGet:
+            path: /
+            port: 8000
+        command:
+          - 'sh'
+          - '-c'
+          - |
+            /app/bin/governance --endpoint zmq://0.0.0.0:{{ .Values.ports.governance }}
+        env:
+        {{ if (eq .Values.opentracing "enabled") }}
+          - name: JAEGER_SERVICE_NAME
+            value: governance
+        envFrom:
+          - configMapRef:
+              name: saf-jaeger-env
+        {{ end }}
+      volumes:
+        - name: yang-volume
+          persistentVolumeClaim:
+            claimName: saf-pvc
+      imagePullSecrets:
+      - name: saf-regcred

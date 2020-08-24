@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1f2xbdq" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.1.0">
+  <bpmn:process id="Process_1uodlb7" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" />
+    <bpmn:scriptTask id="Task_0oxb16c" camunda:resource="deployment://abcd.groovy" />
+    <bpmn:scriptTask id="ScriptTask_1tv10e7" camunda:resource="deployment://1234.py" />
+    <bpmn:scriptTask id="ScriptTask_1hsf05z" camunda:resource="deployment://456.groovy" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1uodlb6">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="81" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_1eey7jj_di" bpmnElement="Task_0oxb16c">
+        <dc:Bounds x="473" y="89" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_1tv10e7_di" bpmnElement="ScriptTask_1tv10e7">
+        <dc:Bounds x="297" y="33" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_1hsf05z_di" bpmnElement="ScriptTask_1hsf05z">
+        <dc:Bounds x="661" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

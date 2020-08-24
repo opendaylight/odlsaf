@@ -1,0 +1,13 @@
+{
+  "workflow-name": "GET",
+  "workflow-input": {
+    "array-element": [
+      {
+        "yang-path": "config/jsonrpc:config/configured-endpoints/junos/yang-ext:mount/openconfig-interfaces:interfaces/interface/{ge-1/2/9}"
+      },
+      {
+        "yang-path": "config/jsonrpc:config/configured-endpoints/nxos/yang-ext:mount/openconfig-interfaces:interfaces/interface/{Ethernet2}"
+      }
+    ]
+  }
+}

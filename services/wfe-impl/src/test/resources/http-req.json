@@ -1,0 +1,17 @@
+{
+    "workflow-name": "Http",
+    "workflow-input": [
+        {
+            "uri": "http://lsc:8181/restconf/config/network-topology:network-topology",
+            "method": "GET",
+            "connection-timeout": 40000,
+            "read-timeout": 40000,
+            "headers": {
+                "Accept": "application/json",
+                "Authorization": "Basic YWRtaW46YWRtaW4=",
+                "Cache-Control": "no-cache",
+                "Content-Type": "application/json"
+            }
+        }
+    ]
+}

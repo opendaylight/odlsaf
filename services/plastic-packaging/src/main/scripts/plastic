@@ -1,0 +1,24 @@
+#!/bin/bash
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+: ${1?"Please supply a JSONRPC endpoint as the first argument like zmq://0.0.0.0:20000"}
+
+set -e
+
+POLL_INTERVAL=${POLL_INTERVAL:-5}
+root_dir=/app
+executable=$(find ${root_dir}/lib/java/plastic*.jar)
+
+cd ${root_dir}
+
+source /etc/profile
+
+exec java -Dlogging.config=file://${root_dir}/config/logback.xml \
+    -jar ${executable} \
+    --plasticRoot="${root_dir}/data" \
+    --poll.interval=${POLL_INTERVAL} \
+    --endpoint=${1}

@@ -1,0 +1,166 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+{{ if (eq .Values.opentracing "enabled") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saf-jaeger-env
+  namespace: {{ .Release.Namespace }}
+data:
+  JAEGER_AGENT_HOST: {{ .Values.jaegerHost }}.{{ .Release.Namespace }}.svc.cluster.local
+  JAEGER_AGENT_PORT: {{ .Values.ports.jaeger.agent | quote }}
+  JAEGER_SAMPLER_MANAGER_HOST_PORT: {{ .Values.jaegerHost }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.jaeger.agentConfigs }}
+---
+apiVersion: v1
+kind: List
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    namespace: {{ .Release.Namespace }}
+    name: jaeger
+    labels:
+      app: jaeger
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: all-in-one
+  spec:
+    replicas: 1
+    strategy:
+      type: Recreate
+    selector:
+      matchLabels:
+        app: jaeger
+    template:
+      metadata:
+        labels:
+          app: jaeger
+          app.kubernetes.io/name: jaeger
+          app.kubernetes.io/component: all-in-one
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "16686"
+      spec:
+          containers:
+          -   env:
+              - name: COLLECTOR_ZIPKIN_HTTP_PORT
+                value: "9411"
+              image: "{{ .Values.images.jaeger }}"
+              name: jaeger
+              ports:
+                - containerPort: 5775
+                  protocol: UDP
+                - containerPort: {{ .Values.ports.jaeger.agent }}
+                  protocol: UDP
+                - containerPort: 6832
+                  protocol: UDP
+                - containerPort: 5778
+                  protocol: TCP
+                - containerPort: {{ .Values.ports.jaeger.query }}
+                  protocol: TCP
+                - containerPort: 9411
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: "/"
+                  port: 14269
+                initialDelaySeconds: 5
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: jaeger-query
+    namespace: {{ .Release.Namespace }}
+    labels:
+      app: jaeger
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: query
+  spec:
+    ports:
+      - name: query-http
+        port: 80
+        protocol: TCP
+        targetPort: {{ .Values.ports.jaeger.query }}
+    selector:
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: all-in-one
+    type: NodePort
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: jaeger-collector
+    namespace: {{ .Release.Namespace }}
+    labels:
+      app: jaeger
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: collector
+  spec:
+    ports:
+    - name: jaeger-collector-tchannel
+      port: 14267
+      protocol: TCP
+      targetPort: 14267
+    - name: jaeger-collector-http
+      port: 14268
+      protocol: TCP
+      targetPort: 14268
+    - name: jaeger-collector-zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: 9411
+    selector:
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: all-in-one
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: jaeger-agent
+    namespace: {{ .Release.Namespace }}
+    labels:
+      app: jaeger
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: agent
+  spec:
+    ports:
+    - name: agent-zipkin-thrift
+      port: 5775
+      protocol: UDP
+      targetPort: 5775
+    - name: agent-compact
+      port: {{ .Values.ports.jaeger.agent }}
+      protocol: UDP
+      targetPort: {{ .Values.ports.jaeger.agent }}
+    - name: agent-binary
+      port: 6832
+      protocol: UDP
+      targetPort: 6832
+    - name: agent-configs
+      port: 5778
+      protocol: TCP
+      targetPort: 5778
+    clusterIP: None
+    selector:
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: all-in-one
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: zipkin
+    labels:
+      app: jaeger
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: zipkin
+  spec:
+    ports:
+    - name: jaeger-collector-zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: 9411
+    clusterIP: None
+    selector:
+      app.kubernetes.io/name: jaeger
+      app.kubernetes.io/component: all-in-one
+{{ end }}

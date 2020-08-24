@@ -1,0 +1,98 @@
+module saf-yang-library {
+    namespace "https://opendaylight.org/saf/yang/library";
+    prefix "library";
+
+    import saf-base { prefix base; }
+
+    description "YANG library services.";
+
+    revision 2020-02-27 {
+        description "Initial revision.";
+    }
+
+    typedef revision-date {
+        description
+                "A string type for a YANG module revision date.";
+        reference
+                "RFC 6020: YANG - A Data Modeling Language Section 5.1.1. Import
+                and Include by Revision";
+        type string {
+            pattern '\d{4}-\d{2}-\d{2}';
+        }
+    }
+
+    grouping arg-modules-list {
+        anyxml modules {
+            description "A list of modules.";
+            mandatory true;
+        }
+    }
+
+    grouping arg-module {
+        leaf module {
+            description
+                        "The YANG module that is the subject of this procedure.";
+            mandatory true;
+            type string;
+        }
+    }
+
+    grouping arg-revision {
+        leaf revision {
+            description
+                        "The YANG module revision that is the subject of this procedure.";
+            mandatory true;
+            type revision-date;
+        }
+    }
+
+    grouping arg-module-with-source {
+        leaf module {
+            type base:module-name;
+        }
+        leaf source {
+            type string;
+        }
+    }
+
+    rpc list {
+        description
+                "Return a list of all modules available from this library.";
+        output {
+            uses arg-modules-list;
+        }
+    }
+
+    rpc find {
+        description
+                "Return a list of available modules with the given module name,
+                optionally restricted by revision.";
+        input {
+            uses arg-module;
+            uses arg-revision;
+        }
+        output {
+            uses arg-modules-list;
+        }
+    }
+
+    rpc publish {
+        description "Publish set of modules into library. None of existing modules
+                are overwritten by this operation. After this operation succeeds,
+                published modules are immediately available for other services
+                to consume. Published modules can't be unpublished, as they may
+                have already been distributed to other services";
+
+        input {
+            list modules {
+                key "module";
+                uses arg-module-with-source;
+            }
+        }
+
+        output {
+            uses base:arg-success;
+            uses base:arg-reason;
+        }
+    }
+}
