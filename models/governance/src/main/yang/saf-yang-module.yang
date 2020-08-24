@@ -1,0 +1,46 @@
+module saf-yang-module {
+    namespace "https://opendaylight.org/saf/yang/module";
+    prefix "module";
+
+    import saf-yang-library { prefix library; }
+
+    description
+        "YANG module services.";
+
+    revision 2020-02-27 {
+        description "Initial revision.";
+    }
+
+    rpc source {
+        description
+            "Return the YANG source text of the specified YANG module.";
+        input {
+            uses library:arg-module;
+            uses library:arg-revision { refine revision { mandatory false; } }
+        }
+        output {
+            leaf source {
+                description "The YANG source text";
+                mandatory true;
+                type string;
+            }
+        }
+    }
+
+    rpc depends {
+        description
+            "Return a list of all modules that a module depends upon. The input
+             module is specified by module name and, optionally, revision. The
+             returned list will include an entry specifying the module name and
+             revision date for every module that the input module depends upon.
+             All direct import and include dependencies, plus their transitive
+             dependencies, are returned.";
+        input {
+            uses library:arg-module;
+            uses library:arg-revision { refine revision { mandatory false; } }
+        }
+        output {
+            uses library:arg-modules-list;
+        }
+    }
+}

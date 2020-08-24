@@ -1,0 +1,124 @@
+module saf-plastic {
+    namespace "https://opendaylight.org/saf/plastic";
+    prefix "plastic";
+
+    description
+    "RPC definitions for Plastic Service";
+
+    revision 2018-04-11 {
+        description "Initial revision.";
+    }
+
+    grouping in-versioned-schema {
+        description
+        "This specifies a resource used to interpret an otherwise opaque
+        input/output 'blob'. This selects the transformation strategy for an
+        input or output phase which defines syntax and semantics to transform.
+
+        All values are case-insensitive. The name and version
+        values are concatenated ${name}-${version} with an extension suffix
+        mapped from the type value.";
+
+        leaf in-name {
+            type string;
+            mandatory true;
+            description
+            "Defines a general category of data which can be transformed
+            by this schema.";
+        }
+        leaf in-version {
+            type string;
+            mandatory true;
+            description
+            "Defines a specific version of the named category to apply to
+            transforming the data. It is recommended this follow semantic
+            versioning but it is not required.";
+        }
+        leaf in-type {
+            type string;
+            mandatory true;
+            description
+            "The format of the data to which this schema applies. Values are
+            borrowed from IANA MIME types and follow corresponding standards
+            associated with that MIME type.
+
+            Enumerated values are guaranteed support. Behavior of a value
+            not enumerated is undefined but the string value can be used to
+            extend the system as part of deployment without updating the YANG
+            model.";
+        }
+    }
+
+    grouping out-versioned-schema {
+        description
+        "This specifies a resource used to interpret an otherwise opaque
+        input/output 'blob'. This selects the transformation strategy for an
+        input or output phase which defines syntax and semantics to transform.
+
+        All values are case-insensitive. The name and version
+        values are concatenated ${name}-${version} with an extension suffix
+        mapped from the type value.";
+
+        leaf out-name {
+            type string;
+            mandatory true;
+            description
+            "Defines a general category of data which can be transformed
+            by this schema.";
+        }
+        leaf out-version {
+            type string;
+            mandatory true;
+            description
+            "Defines a specific version of the named category to apply to
+            transforming the data. It is recommended this follow semantic
+            versioning but it is not required.";
+        }
+        leaf out-type {
+            type string;
+            mandatory true;
+            description
+            "The format of the data to which this schema applies. Values are
+            borrowed from IANA MIME types and follow corresponding standards
+            associated with that MIME type.
+
+            Enumerated values are guaranteed support. Behavior of a value
+            not enumerated is undefined but the string value can be used to
+            extend the system as part of deployment without updating the YANG
+            model.";
+        }
+    }
+
+    rpc translate {
+        description
+        "Transforms an input to an output based on the given schemas and the
+        data given. The input and output types do not need to be identical.
+
+        Each schema is mapped to an underlying file as described by the
+        versioned-schema type.";
+
+        input {
+            uses in-versioned-schema;
+            uses out-versioned-schema;
+            leaf data {
+                description "Incoming input data to be transformed.";
+                mandatory true;
+                type string;
+            }
+            leaf defaults {
+                description "JSON-encoded map of key-value pairs for variables not found in input.";
+                type string;
+                default "";
+            }
+        }
+        output {
+            leaf data {
+                description
+                "Resulting data after the incoming data is translated and
+                transformed according to the schemas. The format is dictated
+                by the type of the output schema.";
+                type string;
+            }
+        }
+    }
+}

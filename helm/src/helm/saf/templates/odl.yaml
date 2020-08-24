@@ -1,0 +1,148 @@
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: odl
+  labels:
+    app: odl
+spec:
+  selector:
+    app: odl
+  ports:
+    - port: {{ .Values.ports.odl.restconf }}
+      name: restconf-port
+    - port: {{ .Values.ports.odl.ssh }}
+      name: ssh-port
+    - port: {{ .Values.ports.odl.whoami }}
+      name: whoami-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: odl-external-access
+  labels:
+    app: odl
+spec:
+  selector:
+    app: odl
+  ports:
+    - port: {{ .Values.ports.odl.restconf }}
+      name: restconf-port
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: odl
+  labels:
+    app: odl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odl
+  template:
+    metadata:
+      labels:
+        app: odl
+    spec:
+      initContainers:
+        - name: odl-init
+          command:
+          - sh
+          - -c
+          - |
+             set -x
+             cd /app/controller
+             # Netconf schema cache
+             test -d cache/schema || mkdir -p cache/schema
+             chown {{ .Values.luminaUID}}:{{ .Values.luminaGID }} -Rv cache/schema
+             # Daexim
+             test -d data/daexim/boot || mkdir -p data/daexim/boot
+             chown {{ .Values.luminaUID}}:{{ .Values.luminaGID }} -Rv data/daexim
+             find data/daexim -name \*.json -exec mv {} data/daexim/boot/ \;
+          image: {{ .Values.images.busybox }}
+          volumeMounts:
+          - mountPath: /app/controller/cache/
+            name: odl-volume
+            subPath: odl/cache
+          - mountPath: /app/controller/data/daexim/
+            name: odl-volume
+            subPath: odl/daexim
+      containers:
+        - name: odl
+          image: "{{.Values.imageRegistry}}/{{ .Values.images.odl }}"
+          startupProbe:
+            httpGet:
+              path: /diagstatus
+              port: restconf-port
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            httpGet:
+              path: /diagstatus
+              port: restconf-port
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            httpGet:
+              path: /diagstatus
+              port: restconf-port
+          volumeMounts:
+          - mountPath: /app/controller/cache/
+            name: odl-volume
+            subPath: odl/cache
+          - mountPath: /app/controller/data/daexim/
+            name: odl-volume
+            subPath: odl/daexim
+          env:
+           - name: JAVA_HOME
+             value: /etc/alternatives/jre_11
+           - name: ENABLE_PREFERRED_GC
+             value: "false"
+           - name: JAVA_MIN_MEM
+             value: {{ .Values.odlMem }}G
+           - name: JAVA_MAX_MEM
+             value: {{ .Values.odlMem }}G
+           - name: EXTRA_JAVA_OPTS
+             value: -XX:+UseG1GC -XX:MaxGCPauseMillis=120 -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication
+        {{ if (eq .Values.opentracing "enabled") }}
+           - name: JAEGER_SERVICE_NAME
+             value: odl
+          envFrom:
+            - configMapRef:
+                name: leap-jaeger-env
+        {{ end }}
+          securityContext:
+            runAsGroup: {{ .Values.luminaGID }}
+            runAsUser: {{ .Values.luminaUID }}
+          ports:
+            - name: restconf-port
+              containerPort: {{ .Values.ports.odl.restconf }}
+            - name: ssh-port
+              containerPort: {{ .Values.ports.odl.ssh }}
+            - name: whoami-port
+              containerPort: {{ .Values.ports.odl.whoami }}
+          resources:
+             requests:
+               memory: {{ .Values.odlMem }}Gi
+             limits:
+               memory: {{ .Values.odlMem }}Gi
+          command: ['sh', '-c', '/app/controller/bin/karaf run']
+      imagePullSecrets:
+      - name: leap-regcred
+      volumes:
+      - name: odl-volume
+        persistentVolumeClaim:
+          claimName: leap-pvc

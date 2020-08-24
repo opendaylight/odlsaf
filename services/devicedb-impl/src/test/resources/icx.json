@@ -1,0 +1,12 @@
+{
+    "entity": "icx",
+    "address": "10.11.12.13",
+    "username": "ruckus",
+    "login-password": "ruckus",
+    "enable-password": "",
+    "modules": [
+        "brocade-icx-interfaces",
+        "brocade-icx-version"
+    ],
+    "device-type": "icx"
+}

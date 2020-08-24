@@ -1,0 +1,176 @@
+#!/bin/bash
+# Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+this_name=$(basename $0)
+prog_name="wfe"
+
+root_dir=/app
+executable=$(find ${root_dir}/java/${prog_name}*.jar)
+workspace=${app_dir}/data
+
+odl_address=http://odl:8181
+odl_username=admin
+odl_password=admin
+endpoint=zmq://0.0.0.0:24325
+devicedb_endpoint=
+data_endpoint=
+plastic=
+napalm=
+
+usage() {
+    echo "SAF Workflow engine"
+    echo "Usage ${this_name} optional arguments ..."
+    echo "Optional arguments:"
+    echo "--endpoint <endpoint>            RPC endpoint (default : ${endpoint})"
+    echo "--devicedb <devicedb>            DeviceDB endpoint (default : ${devicedb_endpoint:NONE}}"
+    echo "--data-endpoint <data-endpoint>  Datastore endpoint (default : ${data_endpoint:NONE}"
+    echo "--workspace <path-to-workspace>  Filesystem path to workspace directory (default: ${workspace})"
+    echo "--odl <odl-ip:port>              ODL RESTConf endpoint (default : ${odl})"
+    echo "--odl-user <odl-username>        ODL RESTConf username"
+    echo "--odl-password <odl-password>    ODL RESTConf password"
+    echo "--plastic <plastic-endpoint>     Plastic endpoint"
+}
+
+while (( "$#" )); do
+    case "${1}" in
+        --devicedb)
+            if [ "${2}" = "" ]; then
+                echo "Missing DeviceDB address"
+                usage
+                exit 1
+            fi
+            devicedb_endpoint="${2}"
+            shift 2
+            ;;
+        --endpoint)
+            if [ "${2}" = "" ]; then
+                echo "Missing RPC endpoint address"
+                usage
+                exit 1
+            fi
+            endpoint="${2}"
+            shift 2
+            ;;
+        --data-endpoint)
+            if [ "${2}" = "" ]; then
+                echo "Missing data endpoint address"
+                usage
+                exit 1
+            fi
+            data_endpoint="${2}"
+            shift 2
+            ;;
+        -l|--odl)
+            if [ "${2}" = "" ]; then
+                echo "Missing ODL address"
+                usage
+                exit 1
+            fi
+            odl_address="${2}"
+            shift 2
+            ;;
+        -w|--workspace)
+            if [ "${2}" = "" ]; then
+                echo "Missing workspace path"
+                usage
+                exit 1
+            fi
+            workspace="${2}"
+            shift 2
+            ;;
+        -u|--odl-username)
+            if [ "${2}" = "" ]; then
+                echo "Missing odl username"
+                usage
+                exit 1
+            fi
+            odl_username="${2}"
+            shift 2
+            ;;
+        -p|--odl-password)
+            if [ "${2}" = "" ]; then
+                echo "Missing odl password"
+                usage
+                exit 1
+            fi
+            odl_password="${2}"
+            shift 2
+            ;;
+        -c|--plastic)
+            if [ "${2}" = "" ]; then
+                echo "Missing plastic endpoint"
+                usage
+                exit 1
+            fi
+            plastic="${2}"
+            shift 2
+            ;;
+        -n|--napalm)
+            if [ "${2}" = "" ]; then
+                echo "Missing napalm endpoint"
+                usage
+                exit 1
+            fi
+            napalm="${2}"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument : ${1}"
+            shift
+            ;;
+   esac
+done
+
+source /etc/profile
+
+JAVA_OPTS="${JAVA_OPTS} $SAF_JAVA_OPTS"
+
+cmd="java ${JAVA_OPTS} -Dlogging.config=file://${app_dir}/logback.xml"
+cmd="$cmd -jar ${executable}"
+cmd="$cmd --workspace=${workspace}/workflows"
+
+if [ "${endpoint}" == "" ]; then
+    echo "Required argument is missing : --endpoint"
+else
+    cmd="$cmd --endpoint=${endpoint}"
+fi
+
+if [ "${data_endpoint}" != "" ]; then
+    cmd="$cmd --data-endpoint=${data_endpoint}"
+fi
+
+if [ "${devicedb_endpoint}" != "" ]; then
+    cmd="$cmd --devicedb=${devicedb_endpoint}"
+fi
+
+if [ "${napalm}" != "" ]; then
+    cmd="$cmd --napalm=${napalm}"
+fi
+
+if [ "${plastic}" != "" ]; then
+    cmd="$cmd --plastic=${plastic}"
+fi
+
+if [ "${odl_address}" != "" ]; then
+    cmd="$cmd --odl=${odl_address}"
+    cmd="$cmd --odl-username=${odl_username}"
+    cmd="$cmd --odl-password=${odl_password}"
+fi
+
+
+cd ${app_dir}
+
+mkdir -p "${workspace}/workflows" "${workspace}/python-lib" "${workspace}/data" "${workspace}/exports" > /dev/null
+
+export PYTHONPATH=${workspace}/python-lib:$PYTHONPATH
+export JYTHONPATH=$PYTHONPATH
+
+exec $cmd

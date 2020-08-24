@@ -1,0 +1,80 @@
+module saf-governance {
+    namespace "https://opendaylight.org/saf/governance";
+    prefix "gov";
+
+    import saf-base { prefix base; }
+    import saf-store-base { prefix store-base; }
+
+    description
+        "Data store governance.";
+
+    revision 2020-02-27 {
+        description "Initial revision.";
+    }
+
+    rpc governance {
+        description
+                "This method returns the endpoint uri of the service which governs
+                the data store subtree specified by path for a named entity.";
+        input {
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+        }
+        output {
+            uses store-base:arg-uri;
+        }
+    }
+    rpc set-governance {
+        description
+                "This method sets a rule for mapping governance request parameters
+                (as defined in saf-governance-data's `governance` rpc method)
+                to a service endpoint uri. A rule's parameter matching values
+                (store, entity and path) are all optional. The absence of one
+                or more values indicates a pattern matching rule. (How rules are
+                used to match the values in a governance request is described
+                below.) The mapping is strictly one-to-one: that is, if the exact
+                same parameter matching values (including absentees) are supplied
+                in multiple calls to this method there will only be one rule set.
+                (This rule will map to the uri specified in the most recent call.)
+                A call to the ldk-om governance rpc method selects zero or one
+                uris using the set of governance rules. The store, entity and
+                path values supplied in a governance call are tested against rules
+                which match these values (where a value is present in the rule),
+                with testing performed in rule precedence order (see below.) If
+                no match is found then rules matching the supplied store and entity,
+                together with the parent path of the supplied path are tried.
+                This process is repeated until a rule match is found or the root
+                model path has been tried. The precedence order of rules which
+                have the same path value is: 1) Full match - a rule where store,
+                entity, path all have values 2) Wildcard store - a rule where
+                entity, path have values and store does not 3) Wildcard entity
+                - a rule where store, path have values and entity does not 4)
+                Full wildcard - a rule where path has a value and store, entity
+                do not For example, calling this rpc and only supplying a uri
+                sets a global default service for governing any data store subtree
+                that is not covered by a more specific rule. ";
+        input {
+            uses store-base:arg-uri;
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+        }
+        output {
+            uses base:arg-success;
+        }
+    }
+
+    rpc unset-governance {
+        description
+                "This method unsets a previously set governance rule with the
+                exact same parameter matching values (including absentees.) After
+                this call there will be no rule with these exact parameter matching
+                values. ";
+        input {
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses store-base:arg-path;
+        }
+    }
+}

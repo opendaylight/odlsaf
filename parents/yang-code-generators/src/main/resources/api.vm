@@ -1,0 +1,55 @@
+// Generated code, DO NOT modify
+
+package $javapackage;
+
+import java.lang.AutoCloseable;
+
+import javax.annotation.Generated;
+
+import org.opendaylight.jsonrpc.bus.api.RpcMethod;
+
+@Generated(
+    value = "org.opendaylight.saf.codegen.JavaCodeGeneratorImpl",
+    comments = "Generated from $yangmodule",
+    date = "$currentdatetime"
+)
+public interface $javaname extends AutoCloseable {
+
+#foreach($method in $methods)
+#if ($method.description)
+    $method.description
+#end
+    @RpcMethod("$method.name")
+    $method.outputJavaType $method.javaName $op $method.inputJavaType $method.paramname $cp;
+
+#if ($method.inputJavaType != '')
+#if ($method.description)
+    $method.description
+#end
+    @RpcMethod("$method.name")
+    default $method.outputJavaType $method.javaName $op
+#foreach ($inputField in $method.inputFields)
+        $inputField.javatype $inputField.javaname#if( $foreach.hasNext ) ,#end
+
+#end
+    $cp {
+#if ($method.outputJavaType != 'void')
+        return $method.javaName $op
+#else
+        $method.javaName $op
+#end
+            $method.inputJavaType .builder()
+#foreach ($inputField in $method.inputFields)
+                $dot$inputField.javaname $op $inputField.javaname $cp
+#end
+                .build()
+        $cp;
+    }
+#end
+
+#end
+    @Override
+    default void close() {
+        // NOOP
+    }
+}

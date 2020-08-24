@@ -1,0 +1,42 @@
+module saf-store-control {
+    namespace "https://opendaylight.org/saf/store/control";
+    prefix "store-ctrl";
+
+    import saf-base { prefix base; }
+    import saf-store-base { prefix store-base; }
+
+    description "Control of data store shards.";
+
+    revision 2020-02-27 {
+        description "Moved under new namespace and renamed to follow LEAP project
+                guidelines";
+    }
+
+    revision 2016-04-14 {
+        description "Initial revision.";
+    }
+
+
+    rpc add-entity {
+        description
+                "Accept transactional data store procedures on store for the given
+                combination of entity and modules.";
+        input {
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+            uses base:arg-modules;
+        }
+        output {
+            uses base:arg-success;
+        }
+    }
+    rpc del-entity {
+        description
+                "Reject all transactional data store procedures on store for entity.
+                Permanently delete all managed data in store for entity.";
+        input {
+            uses store-base:arg-store;
+            uses store-base:arg-entity;
+        }
+    }
+}

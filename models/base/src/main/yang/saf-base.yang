@@ -1,0 +1,63 @@
+module saf-base {
+
+    namespace "https://opendaylight.org/saf/base";
+    prefix "base";
+
+    description "SAF base (common) definitions.";
+
+    revision 2020-02-27 {
+        description "Moved under new namespace and renamed to follow LEAP project
+                guidelines";
+    }
+
+    revision 2016-04-13 {
+        description "Initial revision.";
+    }
+
+    typedef module-name {
+        description
+                "A bare or fully-qualified YANG module name. By example, the bare
+                name of this module is 'ldk-base' and the fully-qualified name
+                of its initial revision is 'ldk-base@2016-04-13'.";
+        reference
+                "RFC 6020: YANG - A Data Modelling Language Section 5.2. File
+                Layout";
+        type string {
+            pattern '[a-zA-Z_][a-zA-Z0-9\-_.]*(@\d{4}-\d{2}-\d{2})?';
+        }
+    }
+
+    grouping arg-success {
+        leaf success {
+            description
+                        "A result indicating whether the procedure was successfully executed
+                        or not.";
+            mandatory true;
+            type boolean;
+        }
+    }
+
+    grouping arg-reason {
+        leaf reason {
+            description "A human-readable description of a failure reason.";
+            mandatory true;
+            type string;
+        }
+    }
+
+    grouping arg-modules {
+        leaf-list modules {
+            description "A list of module names.";
+            min-elements 1;
+            type module-name;
+        }
+    }
+
+    typedef transport-protocol {
+        description "Transport protocol such as \"zmq\" or \"ws\"";
+        reference "https://tools.ietf.org/html/rfc3986#appendix-A";
+        type string {
+            pattern "[a-zA-Z][a-z0-9\-\+.]*";
+        }
+    }
+}

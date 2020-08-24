@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2020 Lumina Networks, Inc. All Rights Reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opendaylight.odlparent</groupId>
+        <artifactId>odlparent</artifactId>
+        <version>7.0.5</version>
+        <relativePath />
+    </parent>
+    <groupId>org.opendaylight.saf</groupId>
+    <artifactId>helm-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>SAF :: Parent :: Helm</name>
+    <packaging>pom</packaging>
+    <properties>
+        <helm.version>v3.1.2</helm.version>
+        <helm.executable>${project.build.directory}/helm/linux-amd64/helm</helm.executable>
+        <helm.package.name>${project.artifactId}</helm.package.name>
+        <helm.build.dir>${project.build.directory}/helm/${helm.package.name}</helm.build.dir>
+        <helm.package.version>${project.version}</helm.package.version>
+        <helm.artefact>${helm.package.name}-${helm.package.version}.tgz</helm.artefact>
+    </properties>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/helm/${helm.package.name}</directory>
+                <filtering>true</filtering>
+                <targetPath>${helm.build.dir}</targetPath>
+            </resource>
+        </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>download-helm-if-necessary</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>validate</phase>
+                            <configuration>
+                                <target>
+                                    <mkdir dir="${user.home}/.helm" />
+                                    <get src="https://get.helm.sh/helm-${helm.version}-linux-amd64.tar.gz"
+                                        dest="${user.home}/.helm/helm-${helm.version}-linux-amd64.tar.gz" verbose="true"
+                                        usetimestamp="true" />
+                                </target>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>unpack-helm</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>generate-resources</phase>
+                            <configuration>
+                                <target>
+                                    <mkdir dir="${project.build.directory}/helm/" />
+                                    <untar src="${user.home}/.helm/helm-${helm.version}-linux-amd64.tar.gz"
+                                        compression="gzip" dest="${project.build.directory}/helm/" />
+                                    <chmod file="${helm.executable}" perm="u+x" />
+                                </target>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>lint</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>test</phase>
+                            <configuration>
+                                <target>
+                                    <exec executable="${helm.executable}" failonerror="true">
+                                        <arg value="lint" />
+                                        <arg value="${helm.build.dir}" />
+                                        <arg value="--debug" />
+                                    </exec>
+                                </target>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>package-chart</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>package</phase>
+                            <configuration>
+                                <target>
+                                    <exec executable="${helm.executable}" failonerror="true">
+                                        <arg value="package" />
+                                        <arg value="--destination" />
+                                        <arg value="${project.build.directory}" />
+                                        <arg value="${helm.build.dir}" />
+                                        <arg value="--debug" />
+                                    </exec>
+                                    <exec executable="${helm.executable}" failonerror="true">
+                                        <arg value="show" />
+                                        <arg value="all" />
+                                        <arg value="${helm.build.dir}" />
+                                        <arg value="--debug" />
+                                    </exec>
+                                </target>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>attach-artifact</goal>
+                            </goals>
+                            <configuration>
+                                <artifacts>
+                                    <artifact>
+                                        <file>${project.build.directory}/${helm.artefact}</file>
+                                        <type>tar.gz</type>
+                                    </artifact>
+                                </artifacts>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase />
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
