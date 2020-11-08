@@ -22,15 +22,14 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
         <docker.image.from>${docker.vendor}/saf-base:${docker.image.version} as builder</docker.image.from>
         <docker.image.description>ODL docker image</docker.image.description>
         <docker.build.steps><![CDATA[
+FROM ${docker.vendor}/saf-base:${docker.image.version}
 COPY *.zip /tmp/
 
 RUN cd /tmp; unzip -q '*.zip' -d ${pkg.root.dir} && chmod +x ${pkg.bin.dir}/*
 
-RUN chown 999:997 -R ${pkg.root.dir}
-
-FROM ${docker.vendor}/saf-base:${docker.image.version}
 
 COPY --from=builder ${pkg.root.dir} ${pkg.root.dir}
+RUN chown 999:997 -R ${pkg.root.dir}/
 
 ]]>
         </docker.build.steps>
