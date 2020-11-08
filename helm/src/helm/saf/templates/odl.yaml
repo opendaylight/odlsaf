@@ -62,7 +62,7 @@ spec:
           - -c
           - |
              set -x
-             cd /app/controller
+             cd /app/
              # Netconf schema cache
              test -d cache/schema || mkdir -p cache/schema
              chown {{ .Values.luminaUID}}:{{ .Values.luminaGID }} -Rv cache/schema
@@ -72,10 +72,10 @@ spec:
              find data/daexim -name \*.json -exec mv {} data/daexim/boot/ \;
           image: {{ .Values.images.busybox }}
           volumeMounts:
-          - mountPath: /app/controller/cache/
+          - mountPath: /app/cache/
             name: odl-volume
             subPath: odl/cache
-          - mountPath: /app/controller/data/daexim/
+          - mountPath: /app/data/daexim/
             name: odl-volume
             subPath: odl/daexim
       containers:
@@ -100,10 +100,10 @@ spec:
               path: /diagstatus
               port: restconf-port
           volumeMounts:
-          - mountPath: /app/controller/cache/
+          - mountPath: /app/cache/
             name: odl-volume
             subPath: odl/cache
-          - mountPath: /app/controller/data/daexim/
+          - mountPath: /app/data/daexim/
             name: odl-volume
             subPath: odl/daexim
           env:
@@ -139,10 +139,10 @@ spec:
                memory: {{ .Values.odlMem }}Gi
              limits:
                memory: {{ .Values.odlMem }}Gi
-          command: ['sh', '-c', '/app/controller/bin/karaf run']
+          command: ['sh', '-c', '/app/bin/karaf run']
       imagePullSecrets:
       - name: leap-regcred
       volumes:
       - name: odl-volume
         persistentVolumeClaim:
-          claimName: leap-pvc
+          claimName: saf-pvc
