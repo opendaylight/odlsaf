@@ -41,13 +41,10 @@ spec:
       securityContext:
         runAsUser: {{ .Values.odluserUID }}
         runAsGroup: {{ .Values.odluserGID }}
-        readOnlyRootFilesystem: true
-        allowPrivilegeEscalation: false
       initContainers:
         - name: wait-depends
           image: "{{ .Values.imageRegistry}}/{{ .Values.images.setup }}"
-          command:
-          - /app/bin/k8s-wait governance
+          command: ['sh', '-c', 'source /etc/profile && /app/bin/k8s-wait-pod governance']
           imagePullPolicy: {{ .Values.ImagePullPolicy }}
       containers:
         - name: devicedb
@@ -63,13 +60,14 @@ spec:
               path: /
               port: 8000
           command:
-            - /app/bin/devicedb \
+            - 'sh'
+            - '-c'
+            - |
+              /app/bin/devicedb  \
                     --operations zmq://0.0.0.0:{{ .Values.ports.devicedb }} \
                     --advertise-operations zmq://devicedb.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.devicedb }}            \
-                    --governance "zmq://governance.{{ .Release.Namespace}}.svc.cluster.local:{{ .Values.ports.governance }}?proxyRetryCount=100&proxyRetryDelay=1000"         \
-                    --odl zmq://odl.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.odl.whoami }}                                \
-                    --napalm ws://napalm.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.napalm }}                               \
-                    --cliengine zmq://cliengine.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.cliengine }}
+                    --governance "zmq://governance.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.governance }}?proxyRetryCount=100&proxyRetryDelay=1000"         \
+                    --odl zmq://odl.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.ports.odl.whoami }}
           env:
           {{ if (eq .Values.opentracing "enabled") }}
           - name: JAEGER_SERVICE_NAME
@@ -79,6 +77,6 @@ spec:
                 name: saf-jaeger-env
           {{ end }}
 
-      imagePullSecrets:
-      - name: saf-regcred
 
+      imagePullSecrets:
+        - name: saf-regcred

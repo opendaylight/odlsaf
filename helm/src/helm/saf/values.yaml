@@ -33,7 +33,7 @@ images:
   odl: saf-odl:${project.version}
   wfe: saf-wfe:${project.version}
   plastic: saf-plastic:${project.version}
-  setup: saf-setup:${project.version}
+  setup: saf-util:${project.version}
   jaeger: jaegertracing/all-in-one:1.17
   busybox: busybox:1.31
 
