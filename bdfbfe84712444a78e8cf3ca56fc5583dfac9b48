@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f037b28e_f4824b23",
+        "filename": "helm/src/helm/saf/templates/devicedb.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 2446
+      },
+      "writtenOn": "2020-11-09T14:14:48Z",
+      "side": 0,
+      "message": "Removing this block will cause application to run as root. Also \"k8s-wait-pod\" script require service account \"saf-read-pods-account\" in order to communicate with k8s control plane.",
+      "revId": "bdfbfe84712444a78e8cf3ca56fc5583dfac9b48",
+      "serverId": "7fc14799-209e-464c-9743-7a06c2c21a81",
+      "unresolved": true
+    }
+  ]
+}
