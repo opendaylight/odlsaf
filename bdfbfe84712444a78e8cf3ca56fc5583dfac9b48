@@ -16,6 +16,24 @@
       "revId": "bdfbfe84712444a78e8cf3ca56fc5583dfac9b48",
       "serverId": "7fc14799-209e-464c-9743-7a06c2c21a81",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d290c803_1f1cdaf6",
+        "filename": "helm/src/helm/saf/templates/devicedb.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 8615
+      },
+      "writtenOn": "2020-11-23T08:59:19Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "f037b28e_f4824b23",
+      "revId": "bdfbfe84712444a78e8cf3ca56fc5583dfac9b48",
+      "serverId": "7fc14799-209e-464c-9743-7a06c2c21a81",
+      "unresolved": false
     }
   ]
 }
