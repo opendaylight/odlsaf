@@ -57,7 +57,7 @@ public final class DelegateUtils {
      */
     public static String getEncodedPath(final String raw) {
         final Matcher m = CURLY_BR_RE.matcher(raw);
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         while (m.find()) {
             m.appendReplacement(sb, URI_ESCAPER.escape(m.group(1)));
         }

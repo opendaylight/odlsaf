@@ -7,7 +7,6 @@
  */
 package org.opendaylight.saf.governance.impl;
 
-import com.google.common.io.ByteStreams;
 import com.google.common.reflect.ClassPath;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +37,7 @@ public abstract class AbstractGovernanceTest {
                     final String name = ri.getResourceName().substring(ri.getResourceName().lastIndexOf('/') + 1);
                     try (InputStream is = ri.url().openStream();
                             OutputStream os = Files.newOutputStream(yangRoot.resolve(name))) {
-                        ByteStreams.copy(is, os);
+                        is.transferTo(os);
                     } catch (IOException e) {
                         throw new IllegalStateException(e);
                     }

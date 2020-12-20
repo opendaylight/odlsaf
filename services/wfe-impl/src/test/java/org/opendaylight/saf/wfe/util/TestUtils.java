@@ -7,7 +7,6 @@
  */
 package org.opendaylight.saf.wfe.util;
 
-import com.google.common.io.ByteStreams;
 import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
 import java.io.ByteArrayOutputStream;
@@ -75,7 +74,7 @@ public final class TestUtils {
      */
     public static void copyResource(String name, Path path) {
         try (InputStream is = Resources.getResource(name).openStream()) {
-            ByteStreams.copy(is, Files.newOutputStream(path.resolve(Paths.get(name).getFileName())));
+            is.transferTo(Files.newOutputStream(path.resolve(Paths.get(name).getFileName())));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -90,8 +89,8 @@ public final class TestUtils {
     public static String readResourceAsText(String name) {
         try (InputStream is = Resources.getResource(name).openStream()) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ByteStreams.copy(is, baos);
-            return baos.toString(StandardCharsets.UTF_8.name());
+            is.transferTo(baos);
+            return baos.toString(StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

@@ -10,8 +10,8 @@ package org.opendaylight.saf.wfe.delegate;
 import static org.opendaylight.saf.wfe.util.DelegateConstants.PUT_REQUEST;
 import static org.opendaylight.saf.wfe.util.DelegateConstants.RESTCONF_BASE;
 
-import com.google.common.base.Preconditions;
 import java.io.IOException;
+import java.util.Objects;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.opendaylight.saf.wfe.impl.model.HttpResponse;
 import org.opendaylight.saf.wfe.impl.model.RestconfDataRequest;
@@ -40,7 +40,7 @@ public class PutDelegate extends AbstractLscDelegate {
 
     @Override
     protected RestconfDataResult mappingFunction(RestconfDataRequest input) throws IOException {
-        Preconditions.checkNotNull(input.getConfigData(), "Configuration data are missing");
+        Objects.requireNonNull(input.getConfigData(), "Configuration data are missing");
         HttpResponse response = client.call(PUT_REQUEST, RESTCONF_BASE + input.getYangPath(),
                 input.getConfigData().toString());
 

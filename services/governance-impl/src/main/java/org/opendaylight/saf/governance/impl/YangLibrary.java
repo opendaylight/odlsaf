@@ -41,9 +41,8 @@ import org.opendaylight.saf.governance.api.saf_yang_library.gen.rev20200227.modu
 import org.opendaylight.yangtools.yang.common.Revision;
 import org.opendaylight.yangtools.yang.model.api.ModuleImport;
 import org.opendaylight.yangtools.yang.model.parser.api.YangSyntaxErrorException;
-import org.opendaylight.yangtools.yang.model.repo.api.SchemaSourceException;
-import org.opendaylight.yangtools.yang.parser.rfc7950.repo.ASTSchemaSource;
-import org.opendaylight.yangtools.yang.parser.rfc7950.repo.TextToASTTransformer;
+import org.opendaylight.yangtools.yang.parser.rfc7950.ir.IRSchemaSource;
+import org.opendaylight.yangtools.yang.parser.rfc7950.repo.TextToIRTransformer;
 import org.opendaylight.yangtools.yang.parser.rfc7950.repo.YangModelDependencyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +56,8 @@ import org.springframework.stereotype.Service;
  * @since Mar 1, 2020
  */
 @Service
-@SuppressFBWarnings(value = { "UPM_UNCALLED_PRIVATE_METHOD",
-        "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" }, justification = "False positive")
+@SuppressFBWarnings(value = {"UPM_UNCALLED_PRIVATE_METHOD",
+                             "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"}, justification = "False positive")
 public class YangLibrary implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(YangLibrary.class);
     private static final Predicate<Path> MATCH_ALL = t -> true;
@@ -76,9 +75,9 @@ public class YangLibrary implements AutoCloseable {
                 public ModuleInfo load(Path path) throws Exception {
                     LOG.debug("Cache miss (module info) {}", path);
                     final String content = readFile(path);
-                    final ASTSchemaSource schemaSource = readAst(path.getFileName().toString(), content);
-                    return new ModuleInfo(schemaSource.getSemVerIdentifier().getName(),
-                            schemaSource.getSemVerIdentifier().getRevision().map(Revision::toString).orElse(null));
+                    final IRSchemaSource schemaSource = readIR(path.getFileName().toString(), content);
+                    return new ModuleInfo(schemaSource.getIdentifier().getName(),
+                            schemaSource.getIdentifier().getRevision().map(Revision::toString).orElse(null));
                 }
             });
 
@@ -93,8 +92,8 @@ public class YangLibrary implements AutoCloseable {
                     LOG.debug("Files that matched key {} : {}", key, candidateFiles);
                     return candidateFiles.stream()
                             .map(YangLibrary::readFile)
-                            .map(source -> readAst(key.getName(), source))
-                            .map(ASTSchemaSource::getDependencyInformation)
+                            .map(source -> readIR(key.getName(), source))
+                            .map(YangModelDependencyInfo::forIR)
                             .map(YangModelDependencyInfo::getDependencies)
                             .map(x -> ((Set<ModuleImport>) x))
                             .findFirst();
@@ -119,7 +118,7 @@ public class YangLibrary implements AutoCloseable {
      * {@link Optional#empty()} is returned. Resulting list of dependencies includes module itself. This is to honor
      * behavior of original implementation.
      *
-     * @param module module name
+     * @param module   module name
      * @param revision module revision
      * @return {@link Optional} list of dependencies.
      */
@@ -141,7 +140,7 @@ public class YangLibrary implements AutoCloseable {
      * to distinguish between "module not found" and "module has no imports" in current implementation (or better say
      * how API was designed).
      *
-     * @param module module name
+     * @param module   module name
      * @param revision (optional) revision, can be null.
      * @return {@link List} of all dependent modules.
      */
@@ -151,10 +150,11 @@ public class YangLibrary implements AutoCloseable {
         final Deque<ModuleInfo> toResolve = new LinkedList<>();
         toResolve.add(new ModuleInfo(module, revision));
         while (!toResolve.isEmpty()) {
-            LOG.debug("Resolved : {}", resolved);
-            LOG.trace("Remaining to resolve : {}", toResolve);
+            LOG.info("Resolved : {}", resolved);
+            LOG.info("Remaining to resolve : {}", toResolve);
             final ModuleInfo current = toResolve.pop();
             resolved.add(current);
+            LOG.info("VVV: Module : {} , Rev {}", current.getModule(), current.getRevision());
             final Set<ModuleInfo> currentImports = moduleImportCache
                     .getUnchecked(new ModuleCacheKey(current.getModule(), current.getRevision()))
                     .flatMap(mods -> Optional.of(mods.stream()
@@ -189,7 +189,7 @@ public class YangLibrary implements AutoCloseable {
     /**
      * Find all modules that matches given name and (optionally) revision.
      *
-     * @param module name of module
+     * @param module   name of module
      * @param revision (optional) revision
      * @return list of modules matching given criteria
      */
@@ -265,11 +265,11 @@ public class YangLibrary implements AutoCloseable {
         };
     }
 
-    private static ASTSchemaSource readAst(String key, String content) {
+    private static IRSchemaSource readIR(String key, String content) {
         try {
-            return TextToASTTransformer.transformText(new StringYangTextSchemaSource(key, content));
-        } catch (YangSyntaxErrorException | SchemaSourceException | IOException e) {
-            throw new IllegalStateException("Unable to parse YANG AST", e);
+            return TextToIRTransformer.transformText(new StringYangTextSchemaSource(key, content));
+        } catch (YangSyntaxErrorException | IOException e) {
+            throw new IllegalStateException("Unable to parse YANG IR", e);
         }
     }
 

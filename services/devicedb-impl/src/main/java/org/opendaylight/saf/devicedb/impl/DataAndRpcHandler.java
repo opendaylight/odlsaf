@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import org.opendaylight.jsonrpc.bus.messagelib.TransportFactory;
-import org.opendaylight.jsonrpc.impl.JsonConverter;
+import org.opendaylight.jsonrpc.dom.codec.JsonRpcCodecFactory;
 import org.opendaylight.jsonrpc.impl.JsonRpcDatastoreAdapter;
 import org.opendaylight.jsonrpc.model.AddListenerArgument;
 import org.opendaylight.jsonrpc.model.DataOperationArgument;
@@ -48,8 +48,8 @@ public class DataAndRpcHandler extends AbstractDeviceHelper implements RemoteOmS
     private final JsonRpcDatastoreAdapter datastore;
 
     public DataAndRpcHandler(@Autowired SchemaContext schemaContext, @Autowired DOMDataBroker domDataBroker,
-            @Autowired JsonConverter jsonConverter, @Autowired TransportFactory transportFactory) {
-        datastore = new JsonRpcDatastoreAdapter(jsonConverter, domDataBroker, schemaContext, transportFactory, false);
+            @Autowired JsonRpcCodecFactory jsonCodecFactory, @Autowired TransportFactory transportFactory) {
+        datastore = new JsonRpcDatastoreAdapter(jsonCodecFactory, domDataBroker, schemaContext, transportFactory);
     }
 
     @Override

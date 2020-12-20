@@ -13,10 +13,8 @@ executable=$(find ${root_dir}/lib/java/${prog_name}*.jar)
 
 operations=zmq://0.0.0.0:24318
 advertise_operations=zmq://devicedb:24318
-lsc=zmq://lsc:24330
+odl=zmq://odl:24330
 governance=zmq://governance:24320
-napalm=zmq://napalm:24322
-cliengine=zmq://cliengine:24319
 
 usage() {
     echo "SAF Device database"
@@ -26,10 +24,8 @@ usage() {
     echo "                                                 operations and RPCs"
     echo "--advertise-operations <advertised address>      Endpoint to advertise to other services"
     echo "                                                 to use local datastore operations and RPCs"
-    echo "--odl <protocol://lsc-ip:port>                   ODL remote control endpoint"
+    echo "--odl <protocol://odl-ip:port>                   ODL remote control endpoint"
     echo "--governance <protocol://governance-ip:port>     Governance endpoint"
-    echo "--napalm <protocol://napalm:port>                Napalm service endpoint"
-    echo "--cliengine <protocol://cliengine:port>          CLIEngine service endpoint"
 }
 
 while (( "$#" )); do
@@ -58,7 +54,7 @@ while (( "$#" )); do
                 usage
                 exit 1
             fi
-            lsc="${2}"
+            odl="${2}"
             shift 2
             ;;
         --governance)
@@ -68,24 +64,6 @@ while (( "$#" )); do
                 exit 1
             fi
             governance="${2}"
-            shift 2
-            ;;
-        --napalm)
-            if [ "${2}" = "" ]; then
-                echo "Missing napalm endpoint"
-                usage
-                exit 1
-            fi
-            napalm="${2}"
-            shift 2
-            ;;
-        --cliengine)
-            if [ "${2}" = "" ]; then
-                echo "Missing cliengine endpoint"
-                usage
-                exit 1
-            fi
-            cliengine="${2}"
             shift 2
             ;;
         -h|--help)
@@ -99,7 +77,7 @@ while (( "$#" )); do
    esac
 done
 
-required_args=("$operations" "$advertise_operations" "$odl" "$governance" "$napalm" "$cliengine")
+required_args=("$operations" "$advertise_operations" "$odl" "$governance")
 for arg in  "${required_args[@]}"; do
     if [ "${arg// /}" == "" ]; then
         echo "One or more required arguments are missing"
@@ -128,6 +106,4 @@ java $JAVA_OPTS \
     --operations="${operations}"                                            \
     --advertise-operations="${advertise_operations}"                        \
     --odl="${odl}"                                                          \
-    --governance="${governance}"                                            \
-    --napalm="${napalm}"                                                    \
-    --cliengine="${cliengine}"
+    --governance="${governance}"

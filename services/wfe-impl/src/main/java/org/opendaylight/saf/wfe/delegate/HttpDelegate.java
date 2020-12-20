@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -73,7 +74,7 @@ public class HttpDelegate extends AbstractDelegate implements JavaDelegate {
     @SuppressWarnings("checkstyle:IllegalCatch")
     private GenericHttpDataResponse mapChecked(HttpDataRequest input) {
         try {
-            Preconditions.checkNotNull(input, "Invalid input");
+            Objects.requireNonNull(input, "Invalid input");
             Preconditions.checkArgument(!Strings.isNullOrEmpty(input.getUri()), "YANG path is missing");
             return mappingFunction(input);
         } catch (Exception e) {
