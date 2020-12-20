@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -139,9 +138,9 @@ public class HttpClientImpl implements HttpClient {
 
     private static String mapEntryUnchecked(Entry<String, String> entry) {
         try {
-            return String.format("%s=%s", URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name()),
-                    URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
-        } catch (UnsupportedEncodingException e) {
+            return String.format("%s=%s", URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+        } catch (IllegalStateException e) {
             throw new IllegalStateException(e);
         }
     }

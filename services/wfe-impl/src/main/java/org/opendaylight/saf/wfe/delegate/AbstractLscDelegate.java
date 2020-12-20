@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -57,7 +58,7 @@ abstract class AbstractLscDelegate extends AbstractDelegate implements JavaDeleg
     @SuppressWarnings("checkstyle:IllegalCatch")
     private RestconfDataResult mapChecked(RestconfDataRequest input) {
         try {
-            Preconditions.checkNotNull(input, "Invalid input");
+            Objects.requireNonNull(input, "Invalid input");
             Preconditions.checkArgument(!Strings.isNullOrEmpty(input.getYangPath()), "YANG path is missing");
             return mappingFunction(input);
         } catch (Exception e) {

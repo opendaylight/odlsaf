@@ -7,7 +7,6 @@
  */
 package org.opendaylight.saf.codegen;
 
-import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,7 +37,7 @@ abstract class AbstractGenerator {
         try (InputStream is = new ByteArrayInputStream(
                 Util.renderTemplate(template, context).getBytes(StandardCharsets.UTF_8));
                 OutputStream os = Files.newOutputStream(file.toPath())) {
-            ByteStreams.copy(is, os);
+            is.transferTo(os);
         }
     }
 

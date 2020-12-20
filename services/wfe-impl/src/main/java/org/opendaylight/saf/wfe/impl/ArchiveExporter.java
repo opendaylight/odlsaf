@@ -10,7 +10,6 @@ package org.opendaylight.saf.wfe.impl;
 import static org.opendaylight.saf.wfe.impl.model.DeploymentItem.parseBpmnResources;
 
 import com.google.common.base.Strings;
-import com.google.common.io.ByteStreams;
 import com.google.common.io.Resources;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -175,7 +174,7 @@ public class ArchiveExporter {
             throws IOException {
         LOG.info("  File {}", name);
         zos.putNextEntry(new ZipEntry(name));
-        ByteStreams.copy(stream, zos);
+        stream.transferTo(zos);
         zos.closeEntry();
         exported.add(name);
     }

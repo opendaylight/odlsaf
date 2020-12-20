@@ -28,9 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.velocity.VelocityContext;
 import org.opendaylight.yangtools.yang.model.api.DataSchemaNode;
@@ -39,6 +37,7 @@ import org.opendaylight.yangtools.yang.model.api.Module;
 import org.opendaylight.yangtools.yang.model.api.NotificationDefinition;
 import org.opendaylight.yangtools.yang.model.api.RpcDefinition;
 import org.opendaylight.yangtools.yang2sources.spi.BasicCodeGenerator;
+import org.opendaylight.yangtools.yang2sources.spi.ModuleResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,10 +52,15 @@ public class JavaCodeGeneratorImpl implements BasicCodeGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(JavaCodeGeneratorImpl.class);
     private Map<String, String> config = new HashMap<>();
     private File resourceBaseDir;
+    /*
+    Collection<File> generateSources(EffectiveModelContext context, File outputBaseDir,
+    Set<Module> currentModules,
+    ModuleResourceResolver moduleResourcePathResolver) throws IOException;
+    */
 
     @Override
     public Collection<File> generateSources(EffectiveModelContext context, File outputBaseDir,
-            Set<Module> currentModules, Function<Module, Optional<String>> moduleResourcePathResolver)
+            Set<Module> currentModules, ModuleResourceResolver moduleResourcePathResolver)
             throws IOException {
         Preconditions.checkNotNull(config.get(CFG_JAVA_PACKAGE_PREFIX), "Missing option %s", CFG_JAVA_PACKAGE_PREFIX);
 

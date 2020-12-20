@@ -16,17 +16,19 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import org.opendaylight.binding.runtime.api.BindingRuntimeContext;
-import org.opendaylight.binding.runtime.api.BindingRuntimeTypes;
-import org.opendaylight.binding.runtime.api.DefaultBindingRuntimeContext;
-import org.opendaylight.binding.runtime.spi.GeneratedClassLoadingStrategy;
 import org.opendaylight.jsonrpc.binding.EmbeddedSchemaService;
+import org.opendaylight.jsonrpc.dom.codec.JsonRpcCodecFactory;
 import org.opendaylight.jsonrpc.impl.JsonConverter;
 import org.opendaylight.mdsal.binding.api.DataBroker;
 import org.opendaylight.mdsal.binding.dom.adapter.AdapterContext;
 import org.opendaylight.mdsal.binding.dom.adapter.BindingDOMDataBrokerAdapter;
 import org.opendaylight.mdsal.binding.dom.adapter.ConstantAdapterContext;
 import org.opendaylight.mdsal.binding.dom.codec.impl.BindingCodecContext;
+import org.opendaylight.mdsal.binding.runtime.api.BindingRuntimeContext;
+import org.opendaylight.mdsal.binding.runtime.api.BindingRuntimeTypes;
+import org.opendaylight.mdsal.binding.runtime.api.DefaultBindingRuntimeContext;
+import org.opendaylight.mdsal.binding.runtime.api.ModuleInfoSnapshot;
+import org.opendaylight.mdsal.binding.runtime.spi.ForwardingModuleInfoSnapshot;
 import org.opendaylight.mdsal.binding.spec.reflect.BindingReflections;
 import org.opendaylight.mdsal.dom.api.DOMDataBroker;
 import org.opendaylight.mdsal.dom.api.DOMSchemaService;
@@ -68,6 +70,8 @@ public class MdsalConfiguration {
     @ConditionalOnMissingBean
     public EffectiveModelContext createSchemaContext(MdsalConfigurationProperties properties)
             throws ReactorException, YangSyntaxErrorException, IOException {
+//        final Set<YangModuleInfo> modules = YangModuleUtil.filter(BindingReflections.loadModuleInfos(),
+//                properties.getSchemaModules());
         final Set<YangModuleInfo> modules = YangModuleUtil.filter(BindingReflections.loadModuleInfos(),
                 properties.getSchemaModules());
         final CrossSourceStatementReactor.BuildAction reactor = RFC7950Reactors.defaultReactor().newBuild();
@@ -87,6 +91,12 @@ public class MdsalConfiguration {
     @ConditionalOnMissingBean
     public JsonConverter createJsonConverter(EffectiveModelContext schemaContext) {
         return new JsonConverter(schemaContext);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public JsonRpcCodecFactory createJsonCodecFactory(EffectiveModelContext schemaContext) {
+        return new JsonRpcCodecFactory(schemaContext);
     }
 
     @Bean
@@ -111,8 +121,14 @@ public class MdsalConfiguration {
     public BindingRuntimeContext createBindingRuntimeContext(EffectiveModelContext schemaContext) {
         final BindingRuntimeTypes runtimeTypes = new BindingRuntimeTypes(schemaContext, Collections.emptyMap(),
                 ImmutableBiMap.of(), ImmutableMultimap.of(), Collections.emptyMap());
-        return DefaultBindingRuntimeContext.create(runtimeTypes,
-                GeneratedClassLoadingStrategy.getTCCLClassLoadingStrategy());
+        //return DefaultBindingRuntimeContext.create(runtimeTypes,
+//                GeneratedClassLoadingStrategy.getTCCLClassLoadingStrategy());
+        return new DefaultBindingRuntimeContext(runtimeTypes, new ForwardingModuleInfoSnapshot() {
+            @Override
+            protected ModuleInfoSnapshot delegate() {
+                return null;
+            }
+        });
     }
 
     @Bean(name = "BindingCodecContext")

@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
 
 @EnableLogConfigEndpoint
 @EnableHealthCheck
-@SpringBootApplication(scanBasePackages = "org.opendaylight.saf.devicedb")
+@SpringBootApplication(scanBasePackages = {"org.opendaylight.saf.devicedb", "org.opendaylight.jsonrpc"})
 @SuppressWarnings("checkstyle:HideUtilityClassConstructor")
 @Import(MdsalConfiguration.class)
 public class Main {

@@ -12,7 +12,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <parent>
         <groupId>org.opendaylight.odlparent</groupId>
         <artifactId>single-feature-parent</artifactId>
-        <version>7.0.5</version>
+        <version>8.0.0</version>
         <relativePath />
     </parent>
 
@@ -25,7 +25,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <properties>
         <jsonrpc.version>1.10.0-SNAPSHOT</jsonrpc.version>
         <restconf.version>1.13.0-SNAPSHOT</restconf.version>
-        <infrautils.version>1.8.0</infrautils.version>
+        <infrautils.version>1.9.1</infrautils.version>
     </properties>
 
     <dependencies>
@@ -67,6 +67,13 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
         <dependency>
             <groupId>org.opendaylight.infrautils</groupId>
             <artifactId>odl-infrautils-ready</artifactId>
+            <version>${infrautils.version}</version>
+            <type>xml</type>
+            <classifier>features</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.infrautils</groupId>
+            <artifactId>odl-infrautils-diagstatus</artifactId>
             <version>${infrautils.version}</version>
             <type>xml</type>
             <classifier>features</classifier>

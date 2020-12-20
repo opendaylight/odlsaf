@@ -7,7 +7,6 @@
  */
 package org.opendaylight.saf.wfe.impl;
 
-import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -184,13 +184,13 @@ public class OmStoreHandler implements RemoteOmShard {
     private void updateTransactionStatus(String txId, JsonElement workflowResponse) {
         try {
             JsonElement successElement = workflowResponse.getAsJsonObject().get(DelegateConstants.SUCCESS);
-            Preconditions.checkNotNull(successElement, "Success key missing in workflow response. "
+            Objects.requireNonNull(successElement,"Success key missing in workflow response. "
                     + "Unable to say whether request was success or not");
             Boolean workflowStatus = successElement.getAsBoolean();
             transactionStatusMap.put(txId, workflowStatus);
             if (!workflowStatus) {
                 JsonElement errorElement = workflowResponse.getAsJsonObject().get(DelegateConstants.ERROR);
-                Preconditions.checkNotNull(errorElement, "No error message in workflow response");
+                Objects.requireNonNull(errorElement,"No error message in workflow response");
                 transactionErrorMap.put(txId, errorElement.getAsString());
             }
         } catch (Exception e) {
