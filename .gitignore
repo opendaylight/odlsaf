@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 *.class
 **/target
 bin/
@@ -35,22 +34,3 @@ maven-eclipse.xml
 # Sphinx documentation
 .tox/
 docs/_build/
-=======
-*.checkstyle
-*.class
-*.classpath
-*.diff
-*.log
-*.project
-*.settings
-*.swp
-*.iml
-*.tgz
-*~
-target
-target-ide
-.idea
-.factorypath
-.fbExcludeFilterFile
-
->>>>>>> 64a182e... Still to fix
